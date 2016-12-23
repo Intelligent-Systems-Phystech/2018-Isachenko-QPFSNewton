@@ -6,10 +6,10 @@ from CreateData import *
 from QPProblem import *
 from Estimator import *
 from Quality import *
-#from criteria import *
-#from alg import *
-#from mi import *
-#Parameters for data sets generation 
+# from criteria import *
+# from alg import *
+# from mi import *
+# Parameters for data sets generation
 np.random.seed(0)
 
 # Number of samples
@@ -24,21 +24,21 @@ features['ortfeat_features'] = 0
 features['coltarget_features'] = 0
 # Number of features corellating with other orthogonal features
 features['colfeat_features'] = 0
-# Number of features orthogonal to target vector and collinearing to each other ones
+# Number of features orthogonal to target vector and collinearing to each other
 features['ortcol_features'] = 0
 # A parameter of multicollinearity
 param['multpar'] = 0.8
 # A set of the considered feature selection methods
 alg = ['Lasso', 'LARS', 'Stepwise', 'ElasticNet', 'Ridge', 'Genetic']
-# A set of the considered criteria 
+# A set of the considered criteria
 crit = ['complexity', 'Cp', 'RSS', 'CondNumber', 'Vif', 'bic']
 # Number of the iteration in AlgCrit function
 param['iter'] = 1
 param['crit'] = crit
 # A limit error
 param['s_0'] = 0.5
-param['threshold'] = 10e-10 # to shrink the small coefficients in w* 
-param['data'] = 'real' # or 'real' 'artificial'
+param['threshold'] = 10e-10  # to shrink the small coefficients in w*
+param['data'] = 'real'  # or 'real' 'artificial'
 # Parameters of the real data set
 param['real_data_filename'] = 'BP50GATEST.mat'
 param['real_data_X'] = 'bp50_s1d_ll_a'
@@ -83,10 +83,12 @@ for i in range(len(threshold)):
     active_idx = z >= threshold[i]
     A[i, :] = active_idx
     if sum(active_idx) > 0:
-        w, train_pred, test_pred = estimator(X_train, y_train, X_test, active_idx)
+        w, train_pred, test_pred = estimator(X_train, y_train, X_test,
+                                             active_idx)
         rss[i] = RSS(train_pred, y_train)
         rss_test[i] = RSS(test_pred, y_test)
-        stability[i] = np.linalg.cond(X_train[:, active_idx].T.dot(X_train[:, active_idx]))
+        stability[i] = np.linalg.cond(
+                X_train[:, active_idx].T.dot(X_train[:, active_idx]))
 #       vif(i) = Vif(X_train(:, active_idx))
         complexity[i] = Complexity(active_idx)
         bic[i] = Bic(rss[i], complexity[i], X_train.shape[0])
@@ -95,4 +97,3 @@ for i in range(len(threshold)):
 idx_min = np.argmin(rss_test)
 active_idx_opt = A[idx_min, :]
 print active_idx_opt
-

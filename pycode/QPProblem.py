@@ -1,10 +1,11 @@
 import numpy as np
 from cvxpy import *
-from scipy.stats.stats import pearsonr   
+from scipy.stats.stats import pearsonr
+
 
 def create_opt_problem(X, y, sim, rel):
     """
-    % Function generates matrix Q and vector b 
+    % Function generates matrix Q and vector b
     % which represent feature similarities and feature relevances
     %
     % Input:
@@ -19,7 +20,7 @@ def create_opt_problem(X, y, sim, rel):
     % Q - [n ,n ] - matrix of features similarities
     % b - [n, 1] - vector of feature relevances
     %
-    % Author: Alexandr Katrutsa, 2016 
+    % Author: Alexandr Katrutsa, 2016
     % E-mail: aleksandr.katrutsa@phystech.edu
     """
     if sim == 'correl':
@@ -57,15 +58,15 @@ def create_opt_problem(X, y, sim, rel):
     #    idx_zero_coeff = find(abs(lm.Coefficients.Estimate(2:end)) < 1e-7);
     #    nan_idx = isnan(p_val);
     #    p_val(nan_idx) = ones(sum(nan_idx), 1);
-    #    b = 1 - p_val ./ sum(p_val); 
+    #    b = 1 - p_val ./ sum(p_val);
     #    b(idx_zero_coeff) = zeros(length(idx_zero_coeff), 1);
-    #    return 
+    #    return
     # end
-  
+
     # end
 
     return Q, b
-    
+
 
 def solve_opt_problem(Q, b):
     """
@@ -79,7 +80,7 @@ def solve_opt_problem(Q, b):
      Output:
      x - [n, 1] - solution of the quadratic optimization problem
 
-     Author: Alexandr Katrutsa, 2016 
+     Author: Alexandr Katrutsa, 2016
      E-mail: aleksandr.katrutsa@phystech.edu
     """
 
@@ -89,7 +90,7 @@ def solve_opt_problem(Q, b):
     objective = Minimize(quad_form(x, Q) - b.T*x)
     constraints = [x >= 0, norm(x, 1) <= 1]
     prob = Problem(objective, constraints)
-    
+
     prob.solve()
 
     if prob.status == 'optimal':
