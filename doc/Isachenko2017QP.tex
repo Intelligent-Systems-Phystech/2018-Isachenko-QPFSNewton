@@ -1,0 +1,351 @@
+\documentclass[a4paper,12pt]{article}
+	
+	% В этом документе преамбула
+	
+	%%% Работа с русским языком
+	\usepackage{cmap}					% поиск в PDF
+	\usepackage{mathtext} 				% русские буквы в формулах
+	\usepackage[T2A]{fontenc}			% кодировка
+	\usepackage[cp1251]{inputenc}			% кодировка исходного текста
+	\usepackage[russian, english]{babel}	% локализация и переносы
+	\usepackage{indentfirst}
+	\frenchspacing
+	
+	\renewcommand{\epsilon}{\ensuremath{\varepsilon}}
+	\renewcommand{\phi}{\ensuremath{\varphi}}
+	\renewcommand{\kappa}{\ensuremath{\varkappa}}
+	\renewcommand{\le}{\ensuremath{\leqslant}}
+	\renewcommand{\leq}{\ensuremath{\leqslant}}
+	\renewcommand{\ge}{\ensuremath{\geqslant}}
+	\renewcommand{\geq}{\ensuremath{\geqslant}}
+	\renewcommand{\emptyset}{\varnothing}
+	
+	%%% Дополнительная работа с математикой
+	\usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools} % AMS
+	\usepackage{icomma} % "Умная" запятая: $0,2$ --- число, $0, 2$ --- перечисление
+	
+	%% Номера формул
+	%\mathtoolsset{showonlyrefs=true} % Показывать номера только у тех формул, на которые есть \eqref{} в тексте.
+	%\usepackage{leqno} % Нумереация формул слева
+	
+	%% Свои команды
+	\DeclareMathOperator{\sgn}{\mathop{sgn}}
+	
+	%% Перенос знаков в формулах (по Львовскому)
+	\newcommand*{\hm}[1]{#1\nobreak\discretionary{}
+		{\hbox{$\mathsurround=0pt #1$}}{}}
+	
+	%%% Работа с картинками
+	\usepackage{graphicx}  % Для вставки рисунков
+	\graphicspath{{images/}{images2/}}  % папки с картинками
+	\setlength\fboxsep{3pt} % Отступ рамки \fbox{} от рисунка
+	\setlength\fboxrule{1pt} % Толщина линий рамки \fbox{}
+	\usepackage{wrapfig} % Обтекание рисунков текстом
+	
+	%%% Работа с таблицами
+	\usepackage{array,tabularx,tabulary,booktabs} % Дополнительная работа с таблицами
+	\usepackage{longtable}  % Длинные таблицы
+	\usepackage{multirow} % Слияние строк в таблице
+	
+	%%% Теоремы
+	\theoremstyle{plain} % Это стиль по умолчанию, его можно не переопределять.
+	\newtheorem{theorem}{Theorem}
+	\newenvironment{Proof} % имя окружения
+	{\par\noindent{\bf Proof.}} % команды для \begin
+	{\hfill$\scriptstyle\blacksquare$} % команды для \end
+	
+	\newtheorem{proposition}[theorem]{Утверждение}
+	
+	\theoremstyle{definition} % "Определение"
+	\newtheorem{corollary}{Следствие}[theorem]
+	\newtheorem{problem}{Задача}[section]
+	
+	\theoremstyle{remark} % "Примечание"
+	\newtheorem*{nonum}{Решение}
+	
+	%%% Программирование
+	\usepackage{etoolbox} % логические операторы
+	
+	%%% Страница
+	\usepackage{extsizes} % Возможность сделать 14-й шрифт
+	\usepackage{geometry} % Простой способ задавать поля
+	\geometry{top=25mm}
+	\geometry{bottom=35mm}
+	\geometry{left=35mm}
+	\geometry{right=20mm}
+	%
+	%\usepackage{fancyhdr} % Колонтитулы
+	% 	\pagestyle{fancy}
+	%\renewcommand{\headrulewidth}{0pt}  % Толщина линейки, отчеркивающей верхний колонтитул
+	% 	\lfoot{Нижний левый}
+	% 	\rfoot{Нижний правый}
+	% 	\rhead{Верхний правый}
+	% 	\chead{Верхний в центре}
+	% 	\lhead{Верхний левый}
+	%	\cfoot{Нижний в центре} % По умолчанию здесь номер страницы
+	
+	\usepackage{setspace} % Интерлиньяж
+	%\onehalfspacing % Интерлиньяж 1.5
+	%\doublespacing % Интерлиньяж 2
+	%\singlespacing % Интерлиньяж 1
+	
+	\usepackage{lastpage} % Узнать, сколько всего страниц в документе.
+	
+	\usepackage{soul} % Модификаторы начертания
+	
+	\usepackage{hyperref}
+	\usepackage[usenames,dvipsnames,svgnames,table,rgb]{xcolor}
+	\hypersetup{				% Гиперссылки
+		unicode=true,           % русские буквы в раздела PDF
+		pdftitle={Заголовок},   % Заголовок
+		pdfauthor={Автор},      % Автор
+		pdfsubject={Тема},      % Тема
+		pdfcreator={Создатель}, % Создатель
+		pdfproducer={Производитель}, % Производитель
+		pdfkeywords={keyword1} {key2} {key3}, % Ключевые слова
+		colorlinks=true,       	% false: ссылки в рамках; true: цветные ссылки
+		linkcolor=red,          % внутренние ссылки
+		citecolor=black,        % на библиографию
+		filecolor=magenta,      % на файлы
+		urlcolor=blue           % на URL
+	}
+	
+	\usepackage{csquotes} % Еще инструменты для ссылок
+	
+	%\usepackage[style=authoryear,maxcitenames=2,backend=biber,sorting=nty]{biblatex}
+	
+	\usepackage{multicol} % Несколько колонок
+	
+	\usepackage{tikz} % Работа с графикой
+	\usepackage{pgfplots}
+	\usepackage{pgfplotstable}
+	
+	\newcommand{\bw}{\mathbf{w}}
+	\newcommand{\bW}{\mathbf{W}}
+	\newcommand{\bx}{\mathbf{x}}
+	\newcommand{\bX}{\mathbf{X}}
+	\newcommand{\by}{\mathbf{y}}
+	\newcommand{\ba}{\mathbf{a}}
+	\newcommand{\cA}{\mathcal{A}}
+	\newcommand{\bchi}{\boldsymbol{\chi}}
+	
+	\newcommand{\T}{{\text{\tiny\sffamily\upshape\mdseries T}}}
+	\newcommand{\argmin}{\mathop{\arg \min}\limits}
+	\newcommand{\argmax}{\mathop{\arg \max}\limits}
+	
+	\begin{document}
+		
+	\section*{Problem Statement}
+	
+	Let $\bX = [\bx_1, \dots, \bx_m]^T = [\bchi_1, \ldots, \bchi_n] \in \mathbb{R}^{m \times n}$ be a design matrix, where $\bx_i \in \mathbb{R}^n$ is the $i$-th object, $\bchi_j \in \mathbb{R}^m$ is the $j$-th feature.
+	Denote by $\mathcal{J} = \{1, \ldots, n \}$ the feature index set, and let $\cA \subseteq \mathcal{J}$ be a feature index subset.
+	Let~$\by \in \{1, \dots, K\}^n$ be the target vector.
+	Suppose the function $\mathbf{h}$ approximates the probabilities of class label taking on each of the $K$ possible values given object $\bx$ feature index subset $\cA$ and model parameters $\bW = \left[\bw^{(1)}, \dots, \bw^{(K)}\right] \in \mathbb{R}^{n \times K}$
+	\[
+	\mathbf{h}(\bx, \cA, \bW) = 
+	\begin{bmatrix}
+	p(y=1 | \bx, \cA, \bW) \\
+	\dots \\
+	p(y=K | \bx, \cA, \bW) 
+	\end{bmatrix}.
+	\]	
+	
+	Let $\mathbf{a} \in \mathbb{B}^n = \{0,1\}^n$ be an indicator vector such that $a_j = 1$ if and only if $j \in \cA$.
+	The vector $\mathbf{a}^*$ and the index set~$\cA^*$ are related by
+	\begin{equation}
+	a^*_j = 1 \Leftrightarrow j \in \mathcal{A}^*, \; j \in \mathcal{J}.
+	\label{eq::vec2set}
+	\end{equation}
+	
+	The data fitting problem is to find parameters $\bW^*$ such that
+	\begin{equation}
+		\bW^* = \argmin_{\bW \in \mathbb{R}^{n \times K}} S\left(\bW, \ba | \bX, \by, \mathbf{h}\right),
+		\label{eq::data_fit}
+	\end{equation}
+	where $S$ is the error function, which validates the quality of the parameters $\bW$ and the corresponding feature index subset $\cA$ given a design matrix $\bX$, a target vector $\by$ and a hypothesis function $\mathbf{h}$.
+	
+	The features are assumed to be noisy, irrelevant or multicollinear, which leads to  additional error in estimating the optimum model parameters $\bW^*$ and increases the instability of them.
+	Feature selection methods can be used to remove certain features from the design matrix $\bX$.
+	The feature selection procedure reduces the dimensionality of problem~\eqref{eq::data_fit} and improves the stability of the optimum parameters $\bW^*$.
+	The feature selection problem is
+	\begin{equation}
+	\ba^* = \argmin_{\ba \in \mathbb{B}^n} Q(\ba|\bX, \by),
+	\label{eq::feat_sel}
+	\end{equation}
+	where $Q: \mathbb{B}^n \rightarrow \mathbb{R}$ is a quality criterion that determines the quality of a selected feature index subset $\cA \subseteq \mathcal{J}$. 
+	
+	Problem~\eqref{eq::feat_sel} does not necessarily require estimation of the optimum parameters $\bW^*$ for data fitting procedure.
+	It uses the relationships between the features $\bchi_j, j \in \mathcal{J}$ and the target vector~$\by$.  Similarly, the solution of the problem~\eqref{eq::data_fit} is optimal for the given feature subset $\cA$. 
+	
+	One could combine the data fitting problem with feature selection procedure
+	\begin{equation}
+		\bW^*, \ba^* = \argmin_{\substack{\bW \in \mathbb{R}^{n \times K} \\ \ba \in \mathbb{B}^{n}}} S\left(\bW, \ba | \bX, \by, \mathbf{h}\right).
+		\label{eq::mio}
+	\end{equation}
+	The problem~\eqref{eq::mio} is mixed integer optimization problem which includes continuous variables $\bW$ and binary variables $\ba$.
+	
+	This study explores the softmax probability function
+	\[
+	p(y=k | \bx, \cA, \bW) = \frac{\exp\left(\bx_{\cA}^{\T} \bw_{\cA}^{(k)}\right)}{\sum_{j=1}^K \exp \left( \bx_{\cA}^{\T} \bw_{\cA}^{(j)} \right)},
+	\]
+	where $\bx_{\cA}, \bw^{(j)}_{\cA}$ is the reduced object and parameter vector consisting of elements with indices in~$\cA$, i.e. non-zero $\ba$ elements. 
+	
+	The considered error function is 
+	\begin{equation}
+		S(\bW, \cA |\bX, \mathbf{y}, \mathbf{h}) = - \sum_{i=1}^m \sum_{k=1}^{K} \mathbb{I}\{y_i=k\} \log p(y=k | \bx, \cA, \bW),
+		\label{eq::error_function}
+	\end{equation}
+	where the function $\mathbb{I}(A)$ equals to 1 if $A$ is true or 0 otherwise.
+	
+	The error function~\eqref{eq::error_function} coincides with the logistic regression error function in the case of binary classification $K = 2$.
+	
+	\section{Quadratic Optimization Approach to the Multicollinearity Problem}
+	In (Katrutsa stress), it shown that none of the  feature selection methods considered (LARS, Lasso, Ridge, Stepwise and Genetic algorithm) solve problem~\eqref{eq::data_fit} and give a model that is simultaneously stable, accurate and nonredundant.
+	In contrast, in (Katrutsa QP) it was proposed quadratic programming approach to solving the multicollinearity problem for regression problem.
+	
+	The main idea of the proposed approach is to minimize the number of similar features and maximize the number of relevant features. 
+	To formalize this idea it was represented the criterion $Q$ from problem~\eqref{eq::feat_sel} as a quadratic function
+	\begin{equation}
+	Q(\mathbf{a}) = \mathbf{a}^{\T}\mathbf{Q} \mathbf{a} - \mathbf{b}^{\T} \mathbf{a},
+	\label{eq::quad_form}
+	\end{equation}
+	where $\mathbf{Q} \in \mathbb{R}^{n \times n}$ is a matrix of pairwise feature similarities, and $\mathbf{b} \in \mathbb{R}^n$ is a vector of the relevances of features to the target vector. 
+	
+	To compute the matrix $\mathbf{Q}$ and the vector $\mathbf{b}$, it was introduced the functions Sim and~Rel:
+	\begin{equation}
+	\begin{split}
+	&\text{Sim:} \; \mathcal{J} \times \mathcal{J} \rightarrow [0, 1],\\
+	&\text{Rel:} \; \mathcal{J} \rightarrow [0, 1].
+	\end{split}
+	\end{equation}
+	These functions are problem-dependent, defined by the user before performing feature selection, and indicate how to measure feature similarity (Sim) and relevance to the target vector (Rel).
+
+	The matrix $\mathbf{Q}$ is computed using Sim:
+	\begin{equation}
+	\mathbf{Q} = [q_{ij}] = 
+	\text{Sim}\left(\boldsymbol{\chi}_i, \boldsymbol{\chi}_j\right),
+	\label{eq::sim}
+	\end{equation}
+	and the vector $\mathbf{b}$ is computed using Rel:
+	\begin{equation}
+	\mathbf{b} = [b_i] = \text{Rel}\left(\boldsymbol{\chi}_i \right).
+	\label{eq::rel}
+	\end{equation}
+	
+	The optimum feature index set $\cA^*$ is defined by solution of the optimization problem
+	\begin{equation}
+	\mathbf{a}^* = \argmin_{\mathbf{a} \in \mathbb{B}^n} \mathbf{a}^{\T}\mathbf{Q} \mathbf{a} - \mathbf{b}^{\T}\mathbf{a},
+	\label{eq::feat_sel_quad}
+	\end{equation}
+	
+	One of the example of defining the Sim and Rel function proposed in (Katrutsa QP) is the following
+	\begin{equation}
+	q_{ij} = \text{Sim}(\boldsymbol{\chi}_i, \boldsymbol{\chi}_j) = |\hat{\rho}_{ij}|,
+	\label{eq::correl_mat}
+	\end{equation}
+	\begin{equation}
+	b_i = \text{Rel}\left(\boldsymbol{\chi}_i | \mathbf{v}\right) = |\hat{\rho}_{iy}|,
+	\label{eq::correl_vec_reg}
+	\end{equation}
+	where $\hat{\rho}_{ij}$ are sample correlation coefficients between features $\bchi_i$ and $\bchi_j$, $\hat{\rho}_{iy}$ are the sample correlation coefficient between feature $\bchi_i$ and target vector $\by$.
+	 The sample correlation coefficient is defined as 
+	 \begin{equation}
+	 \hat{\rho}_{ij} = \dfrac{(\bchi_i - \overline{\bchi}_i)^{\T}(\bchi_j - \overline{\bchi_j)}}{ \|\bchi_i - \overline{\bchi_i}\|_2 \| \bchi_{j} - \overline{\bchi_j}\|_2}, \qquad \overline{\bchi}_i = [\overline{\chi}_i, \ldots, \overline{\chi}_i]^{\T}, \qquad \overline{\bchi_j} = [\overline{\chi}_j, \ldots, \overline{\chi}_j]^{\T}
+	 					\label{eq::coef_corell}
+	 \end{equation}
+	 where $\overline{\chi}_i$ and $\overline{\chi}_j$ are the means of $\bchi_i$ and $\bchi_j$ respectively.
+	 
+	 We propose to extend this approach to the classification problems. The definition of the $Q$ matrix is the same as in~\eqref{eq::correl_mat}. In order to define relevancies to the target vector we build the model with only one feature $\bchi_i$ and the target vector $\by$. Let denote by $\mathbf{\hat{y}}_i$ the predictions of $i$th such model
+	 \[
+	 		\mathbf{\hat{y}}_i= \text{sign} \left( v^{(0)}_i + v^{(1)}_i \boldsymbol{\chi}_i \right), \quad i=1, \dots, n.
+	 \]
+	 We propose to use logistic regression to fit parameters $\{(v^{(0)}_i, v^{(1)}_i )\}_{i=1}^n$. 
+	 Then the elements of $\mathbf{b} = [b_i]$ are defined as the absolute values of the sample correlation coefficient between {\color{blue}{the}} feature $\boldsymbol{\chi}_i$ and {\color{blue}{the}} target vector $\mathbf{y}$:
+	 \begin{equation}
+	 b_i = \text{Rel}\left(\bchi_i\right) = |\hat{\rho}_{\hat{y}_iy}|.
+	 \label{eq::correl_vec}
+	 \end{equation}
+	 
+	 \subsection{Convex representation of the feature selection problem}
+	 The quadratic programming approach to the multicollinearity problem leads to problem~\eqref{eq::feat_sel_quad}, which is NP-hard because of the Boolean domain.
+	 Therefore, this problem is approximated with a convex optimization problem to solve it efficiently.
+	 
+	 Assume that Sim gives a positive semidefinite matrix $\mathbf{Q}$. 
+	 Then the quadratic form~\eqref{eq::quad_form} is a convex function.
+	 To represent problem~\eqref{eq::feat_sel_quad} in convex form, we have to replace the non-convex set~$\mathbb{B}^n$ with a convex set.
+	 A natural way to achieve this is to use the convex hull of $\mathbb{B}^n$:
+	 \[
+	 \text{Conv}(\mathbb{B}^n) = [0, 1]^n.
+	 \] 
+	 Problem~\eqref{eq::feat_sel_quad} is now approximated by the following \emph{convex optimization problem}:
+	 \begin{equation}
+	 \begin{split}
+	 & \mathbf{z}^* = \argmin_{\mathbf{z} \in [0, 1]^n} \mathbf{z}^{\T}\mathbf{Q}\mathbf{z} - \mathbf{b}^{\T}\mathbf{z}\\
+	 &\text{s.t. } \| \mathbf{z} \|_1 \leq 1. 
+	 \end{split}
+	 \label{eq::feat_sel_quad_convex}
+	 \end{equation}
+	 This constraint is added to show that $\mathbf{z}^*$ can be treated as a vector of non-normalized probabilities for every feature to be selected in the active set $\cA^*$.
+	 
+	 To return from a continuous vector~$\mathbf{z}^*$ to a Boolean vector~$\mathbf{a}^*$ and consequently to an active set~$\cA^*$ (see equation~\eqref{eq::vec2set}), we use the \emph{significance threshold}~$\tau$.
+	 
+	 The value $\tau$ is a significance threshold if $z^*_j > \tau$ if and only if $a^*_j = 1$ and $j \in \cA^*$.
+	 	
+	 Tuning the value of $\tau$ is problem-dependent and is based on the appropriate error rate, the number of features selected and the values of the evaluation criteria.
+	 To obtain the most appropriate significance threshold for a specific problem, we need to set a range of values for $\tau$.
+	 
+	\section*{Mixed Integer Optimization Software}
+	We use python-embedded \href{http://cvxpy.org}{CVXPY} free software package for solving mixed integer optimization problem.
+	
+	The considered types of problems which have open source solvers:
+	\begin{itemize}
+		\item 
+		LP~--- Linear Programming; 
+		\item
+		SOCP~--- Second-Order Cone Programming; 
+		\item
+		SDP~--- Semidefinite Programming; 
+		\item
+		EXP~--- Problems with Exponential cone constraints;
+		\item
+		MIP~--- Mixed Integer Programming
+	\end{itemize}
+
+	Table~\ref{tab::solvers} shows available solvers and types of the problems which they can handle.
+	\begin{table}[h]
+		\centering
+		\caption{Solvers vs Problems}
+		\label{tab::solvers}
+		\begin{tabular}{|c|c|c|c|c|c|}
+			\hline
+			& LP & SOCP & SDP & EXP & MIP \\
+			\hline
+			CBC       & X  &      &     &     & X   \\
+			\hline
+			GLPK      & X  &      &     &     &     \\
+			\hline
+			GLPK-MI   & X  &      &     &     & X   \\
+			\hline
+			Elemental & X  & X    &     &     &     \\
+			\hline
+			ECOS      & X  & X    &     & X   &     \\
+			\hline
+			ECOS-BB   & X  & X    &     & X   & X   \\
+			\hline
+			GUROBI    & X  & X    &     &     & X   \\
+			\hline
+			MOSEK     & X  & X    & X   &     &     \\
+			\hline
+			CVXOPT    & X  & X    & X   & X   &     \\
+			\hline
+			SCS       & X  & X    & X   & X   &    \\
+			\hline
+		\end{tabular}
+	\end{table}
+
+	In this paper GUROBI solver is used.
+	
+	\section*{Computational experiment}
+	This section provides experiments on the real datasets to show the perfomance of the proposed approach. In the computational experiment we compare the following methods: Quadratic Programming approach, Mixed Integer Programming, Lasso, Ridge, Elastic Net.
+
+	\end{document}
