@@ -1,3 +1,4 @@
+% !TEX encoding = UTF-8 Unicode
 \documentclass[a4paper,12pt]{article}
 	
 	% В этом документе преамбула
@@ -84,10 +85,10 @@
 	% 	\lhead{Верхний левый}
 	%	\cfoot{Нижний в центре} % По умолчанию здесь номер страницы
 	
-	\usepackage{setspace} % Интерлиньяж
-	%\onehalfspacing % Интерлиньяж 1.5
-	%\doublespacing % Интерлиньяж 2
-	%\singlespacing % Интерлиньяж 1
+	\usepackage{setspace} % �?нтерлиньяж
+	%\onehalfspacing % �?нтерлиньяж 1.5
+	%\doublespacing % �?нтерлиньяж 2
+	%\singlespacing % �?нтерлиньяж 1
 	
 	\usepackage{lastpage} % Узнать, сколько всего страниц в документе.
 	
@@ -139,10 +140,10 @@
 	
 	Let $\bX = [\bx_1, \dots, \bx_m]^T = [\bchi_1, \ldots, \bchi_n] \in \mathbb{R}^{m \times n}$ be a design matrix, where $\bx_i \in \mathbb{R}^n$ is the $i$-th object, $\bchi_j \in \mathbb{R}^m$ is the $j$-th feature.
 	Denote by $\mathcal{J} = \{1, \ldots, n \}$ the feature index set, and let $\cA \subseteq \mathcal{J}$ be a feature index subset.
-	Let~$\by \in \{1, \dots, K\}^n$ be the target vector.
-	Suppose the function $\mathbf{h}$ approximates the probabilities of class label taking on each of the $K$ possible values given object $\bx$ feature index subset $\cA$ and model parameters $\bW = \left[\bw^{(1)}, \dots, \bw^{(K)}\right] \in \mathbb{R}^{n \times K}$
+	Let~$\by \in \{1, \dots, K\}^m$ be a target vector.
+	Suppose a function $\mathbf{f}$ approximates the probabilities of class label taking on each of the $K$ possible values given an object $\bx$, a feature index subset $\cA$, and model parameters $\bW = \left[\bw^{(1)}, \dots, \bw^{(K)}\right] \in \mathbb{R}^{n \times K}$
 	\[
-	\mathbf{h}(\bx, \cA, \bW) = 
+	\mathbf{f}(\bx, \cA, \bW) = 
 	\begin{bmatrix}
 	p(y=1 | \bx, \cA, \bW) \\
 	\dots \\
@@ -151,18 +152,19 @@
 	\]	
 	
 	Let $\mathbf{a} \in \mathbb{B}^n = \{0,1\}^n$ be an indicator vector such that $a_j = 1$ if and only if $j \in \cA$.
-	The vector $\mathbf{a}^*$ and the index set~$\cA^*$ are related by
+	The vector $\mathbf{a}$ and the index set~$\cA$ are related by
 	\begin{equation}
 	a^*_j = 1 \Leftrightarrow j \in \mathcal{A}^*, \; j \in \mathcal{J}.
 	\label{eq::vec2set}
 	\end{equation}
+	Further in this paper we equate the binary vector $\mathbf{a}$ and the feature index subset $\cA$.
 	
 	The data fitting problem is to find parameters $\bW^*$ such that
 	\begin{equation}
-		\bW^* = \argmin_{\bW \in \mathbb{R}^{n \times K}} S\left(\bW, \ba | \bX, \by, \mathbf{h}\right),
+		\bW^* = \argmin_{\bW \in \mathbb{R}^{n \times K}} S\left(\bW, \ba | \bX, \by, \mathbf{f}\right),
 		\label{eq::data_fit}
 	\end{equation}
-	where $S$ is the error function, which validates the quality of the parameters $\bW$ and the corresponding feature index subset $\cA$ given a design matrix $\bX$, a target vector $\by$ and a hypothesis function $\mathbf{h}$.
+	where $S$ is the error function, which validates the quality of the parameters $\bW$ and the corresponding feature index subset $\cA$ given a design matrix $\bX$, a target vector $\by$, and a hypothesis function $\mathbf{h}$.
 	
 	The features are assumed to be noisy, irrelevant or multicollinear, which leads to  additional error in estimating the optimum model parameters $\bW^*$ and increases the instability of them.
 	Feature selection methods can be used to remove certain features from the design matrix $\bX$.
@@ -175,28 +177,32 @@
 	where $Q: \mathbb{B}^n \rightarrow \mathbb{R}$ is a quality criterion that determines the quality of a selected feature index subset $\cA \subseteq \mathcal{J}$. 
 	
 	Problem~\eqref{eq::feat_sel} does not necessarily require estimation of the optimum parameters $\bW^*$ for data fitting procedure.
-	It uses the relationships between the features $\bchi_j, j \in \mathcal{J}$ and the target vector~$\by$.  Similarly, the solution of the problem~\eqref{eq::data_fit} is optimal for the given feature subset $\cA$. 
+	It uses the relationships between the features $\bchi_j, j \in \mathcal{J}$ and the target vector~$\by$.  The solution $\mathbf{a}^*$ of problem~\eqref{eq::feat_sel} is used for determining the optimum parameters $\bW^*$ of problem~\eqref{eq::data_fit}.
 	
-	One could combine the data fitting problem with feature selection procedure
+	One could combine the data fitting problem with the feature selection procedure
 	\begin{equation}
-		\bW^*, \ba^* = \argmin_{\substack{\bW \in \mathbb{R}^{n \times K} \\ \ba \in \mathbb{B}^{n}}} S\left(\bW, \ba | \bX, \by, \mathbf{h}\right).
+		\bW^*, \ba^* = \argmin_{\substack{\bW \in \mathbb{R}^{n \times K} \\ \ba \in \mathbb{B}^{n}}} S\left(\bW, \ba | \bX, \by, \mathbf{f}\right).
 		\label{eq::mio}
 	\end{equation}
-	The problem~\eqref{eq::mio} is mixed integer optimization problem which includes continuous variables $\bW$ and binary variables $\ba$.
+	The problem~\eqref{eq::mio} is a mixed integer optimization problem which includes continuous variables $\bW$ and binary variables $\ba$.
 	
 	This study explores the softmax probability function
 	\[
 	p(y=k | \bx, \cA, \bW) = \frac{\exp\left(\bx_{\cA}^{\T} \bw_{\cA}^{(k)}\right)}{\sum_{j=1}^K \exp \left( \bx_{\cA}^{\T} \bw_{\cA}^{(j)} \right)},
 	\]
-	where $\bx_{\cA}, \bw^{(j)}_{\cA}$ is the reduced object and parameter vector consisting of elements with indices in~$\cA$, i.e. non-zero $\ba$ elements. 
+	where $\bx_{\cA}, \bw^{(j)}_{\cA}$ is the reduced object and the parameter vector consisting of elements with indices in~$\cA$. 
 	
-	The considered error function is 
+	The likelihood function is the probability of the observed data given the parameters 
+	\[
+		L(\bW) = p\left(\by | \bX, \cA, \bW \right) = \prod_{i=1}^m \prod_{k=1}^K p(y = k| \bx_i, \cA, \bW)^{[y_i=k]}.
+	\]
+	The error function is the negative logarithm of likelihood. Hence, minimizing the error function is equivalent to maximizing the likelihood
+	
 	\begin{equation}
-		S(\bW, \cA |\bX, \mathbf{y}, \mathbf{h}) = - \sum_{i=1}^m \sum_{k=1}^{K} \mathbb{I}\{y_i=k\} \log p(y=k | \bx, \cA, \bW),
+		S(\bW, \cA |\bX, \mathbf{y}, \mathbf{h}) = -\log L(\bW) = - \sum_{i=1}^m \sum_{k=1}^{K} [y_i=k] \log p(y=k | \bx_i, \cA, \bW).
 		\label{eq::error_function}
 	\end{equation}
-	where the function $\mathbb{I}(A)$ equals to 1 if $A$ is true or 0 otherwise.
-	
+	This function is known as the cross-entropy error for multiclass classification problem. 
 	The error function~\eqref{eq::error_function} coincides with the logistic regression error function in the case of binary classification $K = 2$.
 	
 	\section{Quadratic Optimization Approach to the Multicollinearity Problem}
@@ -204,14 +210,8 @@
 	In contrast, in (Katrutsa QP) it was proposed quadratic programming approach to solving the multicollinearity problem for regression problem.
 	
 	The main idea of the proposed approach is to minimize the number of similar features and maximize the number of relevant features. 
-	To formalize this idea it was represented the criterion $Q$ from problem~\eqref{eq::feat_sel} as a quadratic function
-	\begin{equation}
-	Q(\mathbf{a}) = \mathbf{a}^{\T}\mathbf{Q} \mathbf{a} - \mathbf{b}^{\T} \mathbf{a},
-	\label{eq::quad_form}
-	\end{equation}
-	where $\mathbf{Q} \in \mathbb{R}^{n \times n}$ is a matrix of pairwise feature similarities, and $\mathbf{b} \in \mathbb{R}^n$ is a vector of the relevances of features to the target vector. 
 	
-	To compute the matrix $\mathbf{Q}$ and the vector $\mathbf{b}$, it was introduced the functions Sim and~Rel:
+	To formalize this idea it was introduced the functions Sim and~Rel:
 	\begin{equation}
 	\begin{split}
 	&\text{Sim:} \; \mathcal{J} \times \mathcal{J} \rightarrow [0, 1],\\
@@ -219,14 +219,28 @@
 	\end{split}
 	\end{equation}
 	These functions are problem-dependent, defined by the user before performing feature selection, and indicate how to measure feature similarity (Sim) and relevance to the target vector (Rel).
+	
+	The criterion $Q$ from problem~\eqref{eq::feat_sel} is represented  as a quadratic function
+	\begin{equation}
+	Q(\mathbf{a}) = \mathbf{a}^{\T}\mathbf{Q} \mathbf{a} - \mathbf{b}^{\T} \mathbf{a},
+	\label{eq::quad_form}
+	\end{equation}
+	where $\mathbf{Q} \in \mathbb{R}^{n \times n}$ is a matrix of pairwise feature similarities, and $\mathbf{b} \in \mathbb{R}^n$ is a vector of the relevances of features to the target vector. 
+	
+	To formalize this idea it was represented the criterion $Q$ from problem~\eqref{eq::feat_sel} as a quadratic function
+	\begin{equation}
+	Q(\mathbf{a}) = \mathbf{a}^{\T}\mathbf{Q} \mathbf{a} - \mathbf{b}^{\T} \mathbf{a},
+	\label{eq::quad_form}
+	\end{equation}
+	where $\mathbf{Q} \in \mathbb{R}^{n \times n}$ is a matrix of pairwise feature similarities, and $\mathbf{b} \in \mathbb{R}^n$ is a vector of the relevances of features to the target vector. 
 
-	The matrix $\mathbf{Q}$ is computed using Sim:
+	The matrix $\mathbf{Q}$ is computed using Sim function :
 	\begin{equation}
 	\mathbf{Q} = [q_{ij}] = 
 	\text{Sim}\left(\boldsymbol{\chi}_i, \boldsymbol{\chi}_j\right),
 	\label{eq::sim}
 	\end{equation}
-	and the vector $\mathbf{b}$ is computed using Rel:
+	and the vector $\mathbf{b}$ is computed using Rel function:
 	\begin{equation}
 	\mathbf{b} = [b_i] = \text{Rel}\left(\boldsymbol{\chi}_i \right).
 	\label{eq::rel}
@@ -244,7 +258,7 @@
 	\label{eq::correl_mat}
 	\end{equation}
 	\begin{equation}
-	b_i = \text{Rel}\left(\boldsymbol{\chi}_i | \mathbf{v}\right) = |\hat{\rho}_{iy}|,
+	b_i = \text{Rel}\left(\boldsymbol{\chi}_i\right) = |\hat{\rho}_{iy}|,
 	\label{eq::correl_vec_reg}
 	\end{equation}
 	where $\hat{\rho}_{ij}$ are sample correlation coefficients between features $\bchi_i$ and $\bchi_j$, $\hat{\rho}_{iy}$ are the sample correlation coefficient between feature $\bchi_i$ and target vector $\by$.
@@ -260,7 +274,7 @@
 	 		\mathbf{\hat{y}}_i= \text{sign} \left( v^{(0)}_i + v^{(1)}_i \boldsymbol{\chi}_i \right), \quad i=1, \dots, n.
 	 \]
 	 We propose to use logistic regression to fit parameters $\{(v^{(0)}_i, v^{(1)}_i )\}_{i=1}^n$. 
-	 Then the elements of $\mathbf{b} = [b_i]$ are defined as the absolute values of the sample correlation coefficient between {\color{blue}{the}} feature $\boldsymbol{\chi}_i$ and {\color{blue}{the}} target vector $\mathbf{y}$:
+	 Then the elements of $\mathbf{b} = [b_i]$ are defined as the absolute values of the sample correlation coefficient between the feature $\boldsymbol{\chi}_i$ and the target vector $\mathbf{y}$:
 	 \begin{equation}
 	 b_i = \text{Rel}\left(\bchi_i\right) = |\hat{\rho}_{\hat{y}_iy}|.
 	 \label{eq::correl_vec}
