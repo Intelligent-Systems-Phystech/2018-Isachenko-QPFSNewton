@@ -1,0 +1,273 @@
+% !TEX encoding = UTF-8 Unicode
+\documentclass[a4paper,12pt]{article}
+	
+	% В этом документе преамбула
+	
+	%%% Работа с русским языком
+	\usepackage{cmap}					% поиск в PDF
+	\usepackage{mathtext} 				% русские буквы в формулах
+	\usepackage[T2A]{fontenc}			% кодировка
+	\usepackage[utf8]{inputenc}			% кодировка исходного текста
+	\usepackage[english]{babel}	% локализация и переносы
+	\usepackage{indentfirst}
+	\frenchspacing
+	
+	\renewcommand{\epsilon}{\ensuremath{\varepsilon}}
+	\renewcommand{\phi}{\ensuremath{\varphi}}
+	\renewcommand{\kappa}{\ensuremath{\varkappa}}
+	\renewcommand{\le}{\ensuremath{\leqslant}}
+	\renewcommand{\leq}{\ensuremath{\leqslant}}
+	\renewcommand{\ge}{\ensuremath{\geqslant}}
+	\renewcommand{\geq}{\ensuremath{\geqslant}}
+	\renewcommand{\emptyset}{\varnothing}
+	
+	%%% Дополнительная работа с математикой
+	\usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools} % AMS
+	\usepackage{icomma} % "Умная" запятая: $0,2$ --- число, $0, 2$ --- перечисление
+	
+	%% Номера формул
+	%\mathtoolsset{showonlyrefs=true} % Показывать номера только у тех формул, на которые есть \eqref{} в тексте.
+	%\usepackage{leqno} % Нумереация формул слева
+	
+	%% Свои команды
+	\DeclareMathOperator{\sgn}{\mathop{sgn}}
+	
+	%% Перенос знаков в формулах (по Львовскому)
+	\newcommand*{\hm}[1]{#1\nobreak\discretionary{}
+		{\hbox{$\mathsurround=0pt #1$}}{}}
+	
+	%%% Работа с картинками
+	\usepackage{graphicx}  % Для вставки рисунков
+	\setlength\fboxsep{3pt} % Отступ рамки \fbox{} от рисунка
+	\setlength\fboxrule{1pt} % Толщина линий рамки \fbox{}
+	\usepackage{wrapfig} % Обтекание рисунков текстом
+	
+	%%% Работа с таблицами
+	\usepackage{array,tabularx,tabulary,booktabs} % Дополнительная работа с таблицами
+	\usepackage{longtable}  % Длинные таблицы
+	\usepackage{multirow} % Слияние строк в таблице
+	
+	%%% Теоремы
+	\theoremstyle{plain} % Это стиль по умолчанию, его можно не переопределять.
+	\newtheorem{theorem}{Theorem}
+	\newenvironment{Proof} % имя окружения
+	{\par\noindent{\bf Proof.}} % команды для \begin
+	{\hfill$\scriptstyle\blacksquare$} % команды для \end
+	
+	\newtheorem{proposition}[theorem]{Утверждение}
+	
+	\theoremstyle{definition} % "Определение"
+	\newtheorem{corollary}{Следствие}[theorem]
+	\newtheorem{problem}{Задача}[section]
+	
+	\theoremstyle{remark} % "Примечание"
+	\newtheorem*{nonum}{Решение}
+	
+	%%% Программирование
+	\usepackage{etoolbox} % логические операторы
+	
+	%%% Страница
+	\usepackage{extsizes} % Возможность сделать 14-й шрифт
+	\usepackage{geometry} % Простой способ задавать поля
+	\geometry{top=25mm}
+	\geometry{bottom=35mm}
+	\geometry{left=35mm}
+	\geometry{right=20mm}
+	%
+	%\usepackage{fancyhdr} % Колонтитулы
+	% 	\pagestyle{fancy}
+	%\renewcommand{\headrulewidth}{0pt}  % Толщина линейки, отчеркивающей верхний колонтитул
+	% 	\lfoot{Нижний левый}
+	% 	\rfoot{Нижний правый}
+	% 	\rhead{Верхний правый}
+	% 	\chead{Верхний в центре}
+	% 	\lhead{Верхний левый}
+	%	\cfoot{Нижний в центре} % По умолчанию здесь номер страницы
+	
+	\usepackage{setspace} % �?нтерлиньяж
+	%\onehalfspacing % �?нтерлиньяж 1.5
+	%\doublespacing % �?нтерлиньяж 2
+	%\singlespacing % �?нтерлиньяж 1
+	
+	\usepackage{lastpage} % Узнать, сколько всего страниц в документе.
+	
+	\usepackage{soul} % Модификаторы начертания
+	
+	\usepackage{hyperref}
+	\usepackage[usenames,dvipsnames,svgnames,table,rgb]{xcolor}
+	\hypersetup{				% Гиперссылки
+		unicode=true,           % русские буквы в раздела PDF
+		pdftitle={Заголовок},   % Заголовок
+		pdfauthor={Автор},      % Автор
+		pdfsubject={Тема},      % Тема
+		pdfcreator={Создатель}, % Создатель
+		pdfproducer={Производитель}, % Производитель
+		pdfkeywords={keyword1} {key2} {key3}, % Ключевые слова
+		colorlinks=true,       	% false: ссылки в рамках; true: цветные ссылки
+		linkcolor=red,          % внутренние ссылки
+		citecolor=black,        % на библиографию
+		filecolor=magenta,      % на файлы
+		urlcolor=blue           % на URL
+	}
+	
+	\usepackage{csquotes} % Еще инструменты для ссылок
+	
+	%\usepackage[style=authoryear,maxcitenames=2,backend=biber,sorting=nty]{biblatex}
+	
+	\usepackage{multicol} % Несколько колонок
+	
+	\usepackage{tikz} % Работа с графикой
+	\usepackage{pgfplots}
+	\usepackage{pgfplotstable}
+	
+	\newcommand{\ba}{\mathbf{a}}
+	\newcommand{\bb}{\mathbf{b}}
+	\newcommand{\bw}{\mathbf{w}}
+	\newcommand{\bQ}{\mathbf{Q}}
+	\newcommand{\by}{\mathbf{y}}
+	\newcommand{\bx}{\mathbf{x}}
+	\newcommand{\bY}{\mathbf{Y}}
+	\newcommand{\bX}{\mathbf{X}}
+	\newcommand{\cA}{\mathcal{A}}
+	\newcommand{\cJ}{\mathcal{J}}
+	\newcommand{\bbR}{\mathbb{R}}
+	
+	\newcommand{\T}{{\text{\tiny\sffamily\upshape\mdseries T}}}
+	\newcommand{\argmin}{\mathop{\arg \min}\limits}
+	\newcommand{\argmax}{\mathop{\arg \max}\limits}
+	
+	\begin{document}
+		
+	\section*{Problem Statement}
+	Let assume that we are given the design matrix~$\bX = [\bx_1, \dots, \bx_m]^{\T} \in \bbR^{m \times n}$ and the target vector~$\by = [y_1, \dots, y_m]^{\T} \in \bbR^{m}$. 
+	Each $i$-th matrix $\bX$ row represents an  object which is associated with the $i$-th vector~$\by$ element. 
+	The goal is to build a model~$f$ which predicts the target value~$y$ given the object~$\bx$. 
+	We assume that the function~$f$ is the feed-forward neural network with~$H$ hidden layers. 
+	Each layer has the weight matrix~$\mathbf{W}_h$. We omit the bias term for simplicity. 
+	The input of the $h$ layer is~$\mathbf{g}_{h-1}$ and the output is~$\mathbf{g}_h$. 
+	The output $\mathbf{g}_h$ of the $h$ layer is the result of an activation function applied to the linear combination of weight matrix $\mathbf{W}_h$ and the layer input $\mathbf{g}_{h-1}$
+	\begin{align*}
+		\mathbf{g}_{h} &= \text{activation}_h(\mathbf{W}_h \mathbf{g}_{h-1}), \quad h=1,\dots, H;\\
+		\mathbf{g}_h &\in \bbR^{N_h}, \quad h = 0, \dots, H; \\
+		\mathbf{g}_0 &= \bx; \quad N_0 = n, N_H = 1.
+	\end{align*}
+	We denote the vectorized union of the layers weights $\mathbf{W}_h$ by $\bw$
+	\begin{equation}
+		\bw = \left( \text{vec}(\mathbf{W}_1), \dots, \text{vec}(\mathbf{W}_H) \right)^{\T}.
+	\end{equation}
+	In this notations the model outcome is $f(\bx | \bw)$.
+	The result of applying the function~$f$ to the matrix~$\bX$ is
+	$\mathbf{f}(\bX | \bw) = \left(f(\bx_1 | \bw), \dots, f(\bx_m | \bw)\right)^{\T}.$
+	The weights~$\bw$ are fitted by the minimization of an error function
+	\begin{equation}
+	S(\bw | \bX, \by, f)  \rightarrow \min_{\bw \in \bbR^r}.
+	\label{eq:error_function}
+	\end{equation}
+	The most common choices for the error function~$S(\bw | \bX, \by, f)$ are
+	\begin{itemize}
+		\item squared error for regression task: 
+		$$
+			S(\bw | \bX, \by, f) = \| \by - \mathbf{f} (\bX | \bw)\|^2;
+		$$
+		\item cross-entropy for classification task: 
+		$$
+			S(\bw | \bX, \by, f) = \sum_{i=1}^n y_i \log f (\bx_i | \bw) + (1 - y_i) \log (1 - f (\bx_i | \bw)).
+		$$
+	\end{itemize}
+	The problem~\ref{eq:error_function} could be solved by one of the neural network optimization methods.
+	
+	The number of model weights $r$ could be huge. 
+	In this case the solution of the problem~\ref{eq:error_function} leads to overfitting. 
+	To eliminate this problem we propose to select the subset~$\cA \in \{1, \dots, r\}$ of the active weights. 
+	The weights which are not active are supposed to be zero.
+	The set of non-active weights is denoted by~$\bar{\cA} = \{1, \dots, r\} \setminus \cA$.
+	To choose the subset $\cA$ from the all possible $2^r$ combinations let introduce a quality criteria $Q(\cA | \bX, \by)$. This function evaluate the quality of a particular active set $\cA$
+	\begin{equation}
+		\cA^* = \argmin_{\cA \subseteq \{1, \dots, r\}} Q(\cA | \bX, \by).
+		\label{eq:quality_criteria}
+	\end{equation}
+	
+	If the solution of the~\ref{eq:quadratic_function} is given the next step is to determine the optimal model weights	for the set $\cA^*$
+	
+	\begin{equation}
+		\bw^* = \argmin_{\bw_{\cA^*} \in \bbR^{|\cA^*|}} S(\bw | \bX, \by, f), \quad \text{subject to } \bw_{\bar{\cA^*}} = 0,
+		\label{eq:reduced_error_function}
+	\end{equation}
+	where $\bw_{\cA^*}$ and $\bw_{\bar{\cA^*}}$ are the subvectors of $\bw$ with indices from $\cA^*$ and $\bar{\cA^*}$ respectively.
+	
+	\subsection{Quadratic Quality Criteria}
+	
+	In this paper we propose to use the quadratic quality criteria
+	\begin{equation}
+	Q(\ba) = \ba^{\T} \bQ \ba - \bb^{\T} \ba \rightarrow \min_{\ba \in \{0,1\}^n},
+	\label{eq:quadratic_function}
+	\end{equation}
+	where the binary vector $\ba \in \{0, 1\}^r$ is an indicator of active weights
+	\begin{equation}
+	\ba = \{a_j\}_{j=1}^r, \quad \text{where }
+	a_j = 
+	\begin{cases}
+	1, \, \text{if } j \in \cA; \\
+	0, \, \text{otherwise } (j \in \bar{\cA}).
+	\end{cases}
+	\end{equation}
+	The function $Q(\ba)$ is an equivalent form of the quality criteria~\ref{eq:quality_criteria}.
+	
+	In the paper [Katrutsa] the quadratic programming approach~\ref{eq:quality_criteria} was implemented to linear regression problem, where the model $f(\bx | \bw)$ outcome is a linear combination of features
+	\begin{equation}
+		f(\bx | \bw) = \bw^{\T} \bx.
+	\end{equation}
+	In this case the number of parameters equals to the number of features $r=n$ and the problem of selecting active parameters is equivalent to the feature selection problem.
+	
+	The authors of [Katrutsa] proposed to feature similarities and feature relevances as the parameters $\bQ$ and $\bb$.
+	The matrix $\bQ$ entries measure the pairwise similarities between features. The vector $\bb$ entries measure the relevance of the features to the target variable. 
+	The absolute value of correlation could be used to measure these interactions.
+	The main drawback of this approach that the stage of active set selection and the model fitting are distinguish procedures. 
+	
+	In this paper we propose to use the extension of described approach to the non-linear case of the neural networks. We introduce the iterative algorithm to the active set selection.
+	Let assume that we already have a solution $\bw$ of the problem~\ref{eq:error_function}. Now we determine the $\bQ$ matrix and the $\bb$ vector in the following way.
+	
+	The matrix $\bQ$ entries estimate the pairwise interactions between weights. We assume that the weights from different layers do not interact. To measure the interaction of two weights $[\mathbf{W}_h]_{i_1j_1}$ and $[\mathbf{W}_h]_{i_2j_2}$ we calculate the similarity function between neurons $[\mathbf{g}_{h-1}]_{j_1}$ and $[\mathbf{g}_{h-1}]_{j_2}$ which the weights are connected with.
+	
+	
+	
+	\hrulefill
+	
+	\subsection{Levenberg-Marquardt algorithm}
+	To solve the problem~\ref{eq:reduced_error_function} we will use the Levenberg-Marquardt iterative procedure. 
+	Let assume that we have some initial vector $\bw$. 
+	We would like to change the value of $\bw$ to $\bw + \Delta \bw$. 
+	To determine the $\Delta \bw$ let linearize the function $\mathbf{f}$
+	\begin{equation}
+		\mathbf{f} (\bX | \bw + \Delta \bw) \approx \mathbf{f}(\bX | \bw) + J \cdot \Delta \bw,
+	\end{equation}
+	where $J \in \bbR^{n \times r}$
+	
+	The value of $\Delta \bw$ could be found by solving the linear regression problem.
+	\begin{equation}
+		\left\| \by - \mathbf{f} (\bx | \bw + \Delta \bw) \right\| ^2 \rightarrow \min_{\Delta \bw}
+	\end{equation}
+	\begin{equation}
+		\left\| J \cdot \Delta \bw - \left( \by - \mathbf{f} (\bx | \bw) \right) \right\|^2 \rightarrow \min_{\Delta \bw}
+	\end{equation}
+	\begin{equation}
+		\Delta \bw = \left( J^{\T} J \right)^{-1} \cdot J^{\T} \cdot \left( \by - \mathbf{f} (\bx | \bw) \right)
+	\end{equation}
+	
+	
+	\section{Algorithm}
+	\begin{itemize}
+		\item \begin{equation}
+		\bw^* = \argmin_{\bw_{\cA} \in \bbR^{|\cA|}} S(\bw | \bX, \by, f), \quad \text{subject to } \bw_{\bar{\cA}} = 0,
+		\label{eq:reduced_error_function}
+		\end{equation}
+	\end{itemize}
+
+	\section{Thoughts}
+	\begin{itemize}
+		\item Квадратичный критерий вынести из постановки
+		\item Постановка -> квадратичный критерий -> в случае линейной регрессии ... -> пусть Q, b зависят от параметров -> предлагаем итеративный алгоритм 
+		\item Итеративный алгоритм: либо начиная с первого слоя и дальше, а какой первый шаг?
+	\end{itemize}
+	
+	\end{document}
