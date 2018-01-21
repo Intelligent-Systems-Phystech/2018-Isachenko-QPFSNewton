@@ -120,6 +120,9 @@
 	\usepackage{pgfplots}
 	\usepackage{pgfplotstable}
 	
+	\usepackage{algorithm}
+	\usepackage[noend]{algcompatible}
+	
 	\newcommand{\ba}{\mathbf{a}}
 	\newcommand{\bb}{\mathbf{b}}
 	\newcommand{\bw}{\mathbf{w}}
@@ -180,7 +183,6 @@
 	In this case the solution of the problem~\ref{eq:error_function} leads to overfitting. 
 	To eliminate this problem we propose to select the subset~$\cA \in \{1, \dots, r\}$ of the active weights. 
 	The weights which are not active are supposed to be zero.
-	The set of non-active weights is denoted by~$\bar{\cA} = \{1, \dots, r\} \setminus \cA$.
 	To choose the subset $\cA$ from the all possible $2^r$ combinations let introduce a quality criteria $Q(\cA | \bX, \by)$. This function evaluate the quality of a particular active set $\cA$
 	\begin{equation}
 		\cA^* = \argmin_{\cA \subseteq \{1, \dots, r\}} Q(\cA | \bX, \by).
@@ -190,12 +192,11 @@
 	If the solution of the~\ref{eq:quadratic_function} is given the next step is to determine the optimal model weights	for the set $\cA^*$
 	
 	\begin{equation}
-		\bw^* = \argmin_{\bw_{\cA^*} \in \bbR^{|\cA^*|}} S(\bw | \bX, \by, f), \quad \text{subject to } \bw_{\bar{\cA^*}} = 0,
+		\bw^* = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f), \quad \text{subject to } w_j = 0 \text{ for } j \notin \cA.
 		\label{eq:reduced_error_function}
 	\end{equation}
-	where $\bw_{\cA^*}$ and $\bw_{\bar{\cA^*}}$ are the subvectors of $\bw$ with indices from $\cA^*$ and $\bar{\cA^*}$ respectively.
 	
-	\subsection{Quadratic Quality Criteria}
+	\section*{Quadratic Quality Criteria}
 	
 	In this paper we propose to use the quadratic quality criteria
 	\begin{equation}
@@ -208,7 +209,7 @@
 	a_j = 
 	\begin{cases}
 	1, \, \text{if } j \in \cA; \\
-	0, \, \text{otherwise } (j \in \bar{\cA}).
+	0, \, \text{otherwise }.
 	\end{cases}
 	\end{equation}
 	The function $Q(\ba)$ is an equivalent form of the quality criteria~\ref{eq:quality_criteria}.
@@ -224,13 +225,46 @@
 	The absolute value of correlation could be used to measure these interactions.
 	The main drawback of this approach that the stage of active set selection and the model fitting are distinguish procedures. 
 	
+	\section*{Algorithm}
 	In this paper we propose to use the extension of described approach to the non-linear case of the neural networks. We introduce the iterative algorithm to the active set selection.
 	Let assume that we already have a solution $\bw$ of the problem~\ref{eq:error_function}. Now we determine the $\bQ$ matrix and the $\bb$ vector in the following way.
 	
 	The matrix $\bQ$ entries estimate the pairwise interactions between weights. We assume that the weights from different layers do not interact. To measure the interaction of two weights $[\mathbf{W}_h]_{i_1j_1}$ and $[\mathbf{W}_h]_{i_2j_2}$ we calculate the similarity function between neurons $[\mathbf{g}_{h-1}]_{j_1}$ and $[\mathbf{g}_{h-1}]_{j_2}$ which the weights are connected with.
 	
+	The vector $\bb$ entries estimate the influence of the weights to the target variable. Let approximate the function $f(\bx | \bw)$ at the point $\bw$ by its linearization
+	\begin{equation}
+		\mathbf{f} (\bX | \bw + \Delta \bw) \approx \mathbf{f}(\bX | \bw) + \mathbf{J} \cdot \Delta \bw,
+	\end{equation}
+	where $\mathbf{J} \in \bbR^{m \times r}$ is a Jacobian matrix
+	\begin{equation}
+		\mathbf{J} = 
+		\begin{pmatrix}
+			\frac{\partial f(\bx_1 | \bw)}{\partial w_1} & \dots & 
+			\frac{\partial f(\bx_1 | \bw)}{\partial w_r} \\
+			\dots & \dots & \dots \\
+			\frac{\partial f(\bx_m | \bw)}{\partial w_1} & \dots & 
+			\frac{\partial f(\bx_m | \bw)}{\partial w_r}
+		\end{pmatrix}.
+	\end{equation}
+	The $j$-th element of the vector $\bb$ equals the similarity function between the $j$-th column of the matrix $\mathbf{J}$ and the target vector $\by$.
 	
+	\begin{algorithm}[h]
+		\caption{}
+		\begin{algorithmic}[1]
+			\REQUIRE $\bX, \by$;
+			\ENSURE $\ba, \bw$;
+			\STATE $\ba^0 = (1, \dots, 1)^{\T}$
+			\STATE $\bw^0 = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f)$
+			\FOR{$k=0,\dots, K$}
+			\STATE $\ba^{k+1} = \argmin_{\ba \in \{0,1\}^r} \ba^{\T} \bQ(\bw^k) \ba - \bb^{\T}(\bw^k) \ba, \quad \text{subject to } \ba_{k+1} \odot (1 - \ba_k) = 0$
+			\STATE $\bw^{k+1} = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f), \quad \text{subject to } \bw \odot (1 - \ba_{k + 1}) = 0$
+			\ENDFOR
+		\end{algorithmic}
+	\end{algorithm}
+
+	\section*{Two layers}
 	
+
 	\hrulefill
 	
 	\subsection{Levenberg-Marquardt algorithm}
@@ -253,21 +287,15 @@
 	\begin{equation}
 		\Delta \bw = \left( J^{\T} J \right)^{-1} \cdot J^{\T} \cdot \left( \by - \mathbf{f} (\bx | \bw) \right)
 	\end{equation}
-	
-	
-	\section{Algorithm}
-	\begin{itemize}
-		\item \begin{equation}
-		\bw^* = \argmin_{\bw_{\cA} \in \bbR^{|\cA|}} S(\bw | \bX, \by, f), \quad \text{subject to } \bw_{\bar{\cA}} = 0,
-		\label{eq:reduced_error_function}
-		\end{equation}
-	\end{itemize}
 
 	\section{Thoughts}
 	\begin{itemize}
 		\item Квадратичный критерий вынести из постановки
 		\item Постановка -> квадратичный критерий -> в случае линейной регрессии ... -> пусть Q, b зависят от параметров -> предлагаем итеративный алгоритм 
 		\item Итеративный алгоритм: либо начиная с первого слоя и дальше, а какой первый шаг?
+		\item может столбец матрицы Якоби должен коррелировать с ближайшим нейроном а не выходом
+		\item $\mathbf{g}(\bx | \mathbf{W})$
+		
 	\end{itemize}
 	
 	\end{document}
