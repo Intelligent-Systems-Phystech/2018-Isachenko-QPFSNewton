@@ -127,8 +127,10 @@
 	\newcommand{\bb}{\mathbf{b}}
 	\newcommand{\bw}{\mathbf{w}}
 	\newcommand{\bQ}{\mathbf{Q}}
+	\newcommand{\bW}{\mathbf{W}}
 	\newcommand{\by}{\mathbf{y}}
 	\newcommand{\bx}{\mathbf{x}}
+	\newcommand{\bz}{\mathbf{z}}
 	\newcommand{\bY}{\mathbf{Y}}
 	\newcommand{\bX}{\mathbf{X}}
 	\newcommand{\cA}{\mathcal{A}}
@@ -142,94 +144,112 @@
 	\begin{document}
 		
 	\section*{Problem Statement}
+	We consider the problem of predicting an target variable $y$ given an $n$-dimensional object $\bx$. 
+	The target variable $y$ is assumed to be continuous for regression task and binary for classification task.
+	The goal is to build a model $f$ which outcomes a prediction for each input object.
+	We assume that the function~$f (\bx | \bw)$ is a feed-forward dense neural network with 1 hidden, and 1 output layer. The hidden layer dimension is denoted by $h$. The model output is
+	\[
+	f(\bx | \bw) = \sigma_2\left(\bW_2 \sigma_1(\bW_1 \bx)\right),
+	\]
+	where $\bW_1 \in \bbR^{h \times n}$, $\bW_2 \in \bbR^{1 \times h}$ are weight matrices, $\sigma_1$, $\sigma_2$ are activation functions applied to each input component. We omitted the bias terms for simplicity.
+	Let denote by $\bw = (\text{vec}(\bW_1), \text{vec}(\bW_2)) \in \bbR^p$ a joint weight vector, where $p=h(n + 1)$.
+	
 	Let assume that we are given the design matrix~$\bX = [\bx_1, \dots, \bx_m]^{\T} \in \bbR^{m \times n}$ and the target vector~$\by = [y_1, \dots, y_m]^{\T} \in \bbR^{m}$. 
-	Each $i$-th matrix $\bX$ row represents an  object which is associated with the $i$-th vector~$\by$ element. 
-	The goal is to build a model~$f$ which predicts the target value~$y$ given the object~$\bx$. 
-	We assume that the function~$f$ is the feed-forward neural network with~$H$ hidden layers. 
-	Each layer has the weight matrix~$\mathbf{W}_h$. We omit the bias term for simplicity. 
-	The input of the $h$ layer is~$\mathbf{g}_{h-1}$ and the output is~$\mathbf{g}_h$. 
-	The output $\mathbf{g}_h$ of the $h$ layer is the result of an activation function applied to the linear combination of weight matrix $\mathbf{W}_h$ and the layer input $\mathbf{g}_{h-1}$
-	\begin{align*}
-		\mathbf{g}_{h} &= \text{activation}_h(\mathbf{W}_h \mathbf{g}_{h-1}), \quad h=1,\dots, H;\\
-		\mathbf{g}_h &\in \bbR^{N_h}, \quad h = 0, \dots, H; \\
-		\mathbf{g}_0 &= \bx; \quad N_0 = n, N_H = 1.
-	\end{align*}
-	We denote the vectorized union of the layers weights $\mathbf{W}_h$ by $\bw$
-	\begin{equation}
-		\bw = \left( \text{vec}(\mathbf{W}_1), \dots, \text{vec}(\mathbf{W}_H) \right)^{\T}.
-	\end{equation}
-	In this notations the model outcome is $f(\bx | \bw)$.
-	The result of applying the function~$f$ to the matrix~$\bX$ is
-	$\mathbf{f}(\bX | \bw) = \left(f(\bx_1 | \bw), \dots, f(\bx_m | \bw)\right)^{\T}.$
+	Each $i$-th matrix $\bX$ row represents an object which is associated with the $i$-th vector~$\by$ element.
+	The goal is to find the optimal weight vector $\bw^*$.
+	
 	The weights~$\bw$ are fitted by the minimization of an error function
 	\begin{equation}
-	S(\bw | \bX, \by, f)  \rightarrow \min_{\bw \in \bbR^r}.
+	\bw^* = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f).
 	\label{eq:error_function}
 	\end{equation}
 	The most common choices for the error function~$S(\bw | \bX, \by, f)$ are
 	\begin{itemize}
 		\item squared error for regression task: 
 		$$
-			S(\bw | \bX, \by, f) = \| \by - \mathbf{f} (\bX | \bw)\|^2;
+			S(\bw | \bX, \by, f) = \sum_{i=1}^m \| y_i - f(\bx_i | \bw)\|^2;
 		$$
 		\item cross-entropy for classification task: 
 		$$
-			S(\bw | \bX, \by, f) = \sum_{i=1}^n y_i \log f (\bx_i | \bw) + (1 - y_i) \log (1 - f (\bx_i | \bw)).
+			S(\bw | \bX, \by, f) = \sum_{i=1}^m \left[y_i \log f (\bx_i | \bw) + (1-y_i) \log (1 - f (\bx_i | \bw))\right].
 		$$
 	\end{itemize}
-	The problem~\ref{eq:error_function} could be solved by one of the neural network optimization methods.
+	The problem~\ref{eq:error_function} could be solved by one of the neural network optimization methods~[].
 	
-	The number of model weights $r$ could be huge. 
+	The number of model weights~$p$ could be extremely huge. 
 	In this case the solution of the problem~\ref{eq:error_function} leads to overfitting. 
-	To eliminate this problem we propose to select the subset~$\cA \in \{1, \dots, r\}$ of the active weights. 
+	To eliminate this problem we propose to select the subset~$\cA \subseteq \{1, \dots, p\}$ of the active weights. 
 	The weights which are not active are supposed to be zero.
-	To choose the subset $\cA$ from the all possible $2^r$ combinations let introduce a quality criteria $Q(\cA | \bX, \by)$. This function evaluate the quality of a particular active set $\cA$
+	To choose the subset~$\cA$ from all possible $2^p$ combinations let introduce a quality criteria~$Q(\cA | \bX, \by, f)$. 
+	This function evaluates the quality of a particular active set $\cA$. 
+	We desire to find the optimal subset $\cA^*$ which minimize the function
 	\begin{equation}
-		\cA^* = \argmin_{\cA \subseteq \{1, \dots, r\}} Q(\cA | \bX, \by).
+		\cA^* = \argmin_{\cA \subseteq \{1, \dots, p\}} Q(\cA | \bX, \by, f).
 		\label{eq:quality_criteria}
 	\end{equation}
 	
-	If the solution of the~\ref{eq:quadratic_function} is given the next step is to determine the optimal model weights	for the set $\cA^*$
+	If the solution $\cA^*$ of the~\ref{eq:quality_criteria} is given the next step is to determine the optimal model weights	$\bw^*$ by solving a problem
 	
 	\begin{equation}
-		\bw^* = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f), \quad \text{subject to } w_j = 0 \text{ for } j \notin \cA.
+		\bw^* = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f), \quad \text{subject to } w_j = 0 \text{ for } j \notin \cA^*.
 		\label{eq:reduced_error_function}
 	\end{equation}
 	
-	\section*{Quadratic Quality Criteria}
+	\section*{Feature selection}
 	
-	In this paper we propose to use the quadratic quality criteria
+	To find the optimal subset $\cA^*$ we suggest to use the approach similar to the mRMR method for feature selection problem. 
+	This method tries to select features which have the minimal redundancy and maximum relevance.
+	To formalise this approach let introduce two functions: Sim and Rel. 
+	The former measures the redundancy between features, the latter contains relevances between each feature and target vector. 
+	We want to minimize the Sim function and maximize the Rel simultaneously.
+	The mRMR method uses the difference of these functions
+	$\text{Sim} -\text{Rel}$ to choose the optimal feature subset.
+	
+	The QPFS method offers the explicit way to construct the functions Sim and Rel. 
+	The method minimize the following functional
 	\begin{equation}
-	Q(\ba) = \ba^{\T} \bQ \ba - \bb^{\T} \ba \rightarrow \min_{\ba \in \{0,1\}^n},
-	\label{eq:quadratic_function}
+		(1 - \alpha) \bz^{\T} \bQ \bz - \alpha \mathbf{b}^{\T} \bz \rightarrow \min_{\substack{\bz \in \bbR^n_+ \\ \|\bz\|_1 = 1}}.
+		\label{eq:quadratic_problem}
 	\end{equation}
-	where the binary vector $\ba \in \{0, 1\}^r$ is an indicator of active weights
+	This functional is an analogue of the described quality criteria~\ref{eq:quality_criteria}.
+  	The first term is associated with the Sim function and the second with the Rel. 
+  	The matrix $\bQ \in \bbR^{n \times n}$ entries measures the pairwise similarities between features. 
+  	The vector $\mathbf{b} \in \bbR^n$ express the similarities between each feature and the target vector.
+  	The normalized vector~$\bz$ shows the importance of each feature. 
+  	This approach penalizes the dependent features and encourages features relevant to the target. 
+  	The parameter $\alpha$ allows to control the impact of the Sim and the Rel terms.
+  	To find the optimal feature subset the thresholding for $\bz$ could be applied.
+  	
+  	To measure similarity it was proposed to use the absolute value of sample Pearson correlation coefficient or sample mutual information.
+  	The problem~\ref{eq:quadratic_problem} is convex if the matrix $\bQ$ is positive semidefinite. In general it is not always true. To satisfy this condition one could replace this matrix by $\bQ - \lambda_{\text{min}} \mathbf{I}$, where $\lambda_{\text{min}} $ is a minimal eigenvalue of~$\bQ$.
+  	  	
+  	\section*{Model weights selection}
+  	
+	We propose the algorithm that extends the quadratic programming methodology to the case of model weights selection.
+	Let suppose that the weights from different layers do not interact. 
+	This assumption allows to solve the model weights selection problem separately for each layer.
+	We introduce two vectors $\bz_1 \in \bbR^{hn}_{+}, \|\bz_1\|_1 = 1$ and $\bz_2 \in \bbR^{rh}_{+}, \|\bz_2\|_1 = 1$ for matrices $\bW_1$ and $\bW_2$ respectively. 
+	The components of these vectors express the importance of each individual weight.
+	Let introduce the soft version of the problem~\ref{eq:quality_criteria}
+	\begin{align*}
+		\bz_1^* = \argmin_{\substack{\bz_1 \in \bbR^{hn}_{+} \| \bz_1 \|_1 = 1}} Q(\bz_1 | \bX, \by, f) \\
+		\bz_2^* = \argmin_{\substack{ \bz_2 \in \bbR^{h}_{+} \| \bz_2 \|_1 = 1}} Q(\bz_2 | \bX, \by, f) .
+		\label{eq:soft_quality_criteria}
+	\end{align*}
+
+	Since the vectors $\bz_1$ and $\bz_2$ are obtained, we have to recover the optimal active subset $\cA^*$. 
+	Thresholds $d_1$ and $d_2$ are tuned for both layers. If the weight importance larger than corresponding threshold the weight is assumed to be active.
+	
+	Similarly to the authors of QPFS we use the quadratic quality criteria for each layer
 	\begin{equation}
-	\ba = \{a_j\}_{j=1}^r, \quad \text{where }
-	a_j = 
-	\begin{cases}
-	1, \, \text{if } j \in \cA; \\
-	0, \, \text{otherwise }.
-	\end{cases}
+		Q(\bz | \bX, \by, f) = (1 - \alpha) \bz^{\T} \bQ\bz - \alpha \mathbf{b}^{\T} \bz.
 	\end{equation}
-	The function $Q(\ba)$ is an equivalent form of the quality criteria~\ref{eq:quality_criteria}.
 	
-	In the paper [Katrutsa] the quadratic programming approach~\ref{eq:quality_criteria} was implemented to linear regression problem, where the model $f(\bx | \bw)$ outcome is a linear combination of features
-	\begin{equation}
-		f(\bx | \bw) = \bw^{\T} \bx.
-	\end{equation}
-	In this case the number of parameters equals to the number of features $r=n$ and the problem of selecting active parameters is equivalent to the feature selection problem.
+	The matrix $\bQ$ entries estimate the pairwise interactions between weights. The vector $\bb$ estimates the influence of each weight to the target variable.
 	
-	The authors of [Katrutsa] proposed to feature similarities and feature relevances as the parameters $\bQ$ and $\bb$.
-	The matrix $\bQ$ entries measure the pairwise similarities between features. The vector $\bb$ entries measure the relevance of the features to the target variable. 
-	The absolute value of correlation could be used to measure these interactions.
-	The main drawback of this approach that the stage of active set selection and the model fitting are distinguish procedures. 
+	The interactions between weights measured by calculating the similarity function (correlation or mutual information) ...
 	
-	\section*{Algorithm}
-	In this paper we propose to use the extension of described approach to the non-linear case of the neural networks. We introduce the iterative algorithm to the active set selection.
-	Let assume that we already have a solution $\bw$ of the problem~\ref{eq:error_function}. Now we determine the $\bQ$ matrix and the $\bb$ vector in the following way.
-	
-	The matrix $\bQ$ entries estimate the pairwise interactions between weights. We assume that the weights from different layers do not interact. To measure the interaction of two weights $[\mathbf{W}_h]_{i_1j_1}$ and $[\mathbf{W}_h]_{i_2j_2}$ we calculate the similarity function between neurons $[\mathbf{g}_{h-1}]_{j_1}$ and $[\mathbf{g}_{h-1}]_{j_2}$ which the weights are connected with.
+	\hrulefill
 	
 	The vector $\bb$ entries estimate the influence of the weights to the target variable. Let approximate the function $f(\bx | \bw)$ at the point $\bw$ by its linearization
 	\begin{equation}
@@ -262,39 +282,12 @@
 		\end{algorithmic}
 	\end{algorithm}
 
-	\section*{Two layers}
 	
-
-	\hrulefill
-	
-	\subsection{Levenberg-Marquardt algorithm}
-	To solve the problem~\ref{eq:reduced_error_function} we will use the Levenberg-Marquardt iterative procedure. 
-	Let assume that we have some initial vector $\bw$. 
-	We would like to change the value of $\bw$ to $\bw + \Delta \bw$. 
-	To determine the $\Delta \bw$ let linearize the function $\mathbf{f}$
-	\begin{equation}
-		\mathbf{f} (\bX | \bw + \Delta \bw) \approx \mathbf{f}(\bX | \bw) + J \cdot \Delta \bw,
-	\end{equation}
-	where $J \in \bbR^{n \times r}$
-	
-	The value of $\Delta \bw$ could be found by solving the linear regression problem.
-	\begin{equation}
-		\left\| \by - \mathbf{f} (\bx | \bw + \Delta \bw) \right\| ^2 \rightarrow \min_{\Delta \bw}
-	\end{equation}
-	\begin{equation}
-		\left\| J \cdot \Delta \bw - \left( \by - \mathbf{f} (\bx | \bw) \right) \right\|^2 \rightarrow \min_{\Delta \bw}
-	\end{equation}
-	\begin{equation}
-		\Delta \bw = \left( J^{\T} J \right)^{-1} \cdot J^{\T} \cdot \left( \by - \mathbf{f} (\bx | \bw) \right)
-	\end{equation}
-
 	\section{Thoughts}
 	\begin{itemize}
-		\item Квадратичный критерий вынести из постановки
 		\item Постановка -> квадратичный критерий -> в случае линейной регрессии ... -> пусть Q, b зависят от параметров -> предлагаем итеративный алгоритм 
 		\item Итеративный алгоритм: либо начиная с первого слоя и дальше, а какой первый шаг?
 		\item может столбец матрицы Якоби должен коррелировать с ближайшим нейроном а не выходом
-		\item $\mathbf{g}(\bx | \mathbf{W})$
 		
 	\end{itemize}
 	
