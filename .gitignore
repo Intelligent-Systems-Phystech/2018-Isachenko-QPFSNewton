@@ -5,3 +5,4 @@
 *.aux
 *.out
 untracked/
+code/__pycache__
