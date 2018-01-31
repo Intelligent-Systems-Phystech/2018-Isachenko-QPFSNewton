@@ -94,9 +94,9 @@ class Sequential(Module):
 
 
 class Linear(Module):
-    def __init__(self, n_in, n_out, W_init=None, b_init=None):
+    def __init__(self, n_in, n_out, W_init=None, b_init=None, mask=None):
         super(Linear, self).__init__()
-       
+        
         # This is a nice initialization
         stdv = 1./np.sqrt(n_in)
         if W_init is not None:
@@ -109,6 +109,10 @@ class Linear(Module):
             self.b = b_init
         else:
             self.b = np.random.uniform(-stdv, stdv, size = n_out)
+        
+        self.mask = np.ones(self.W.shape) if mask is None else mask
+        
+        self.W *= self.mask
         
         self.gradW = np.zeros_like(self.W)
         self.gradb = np.zeros_like(self.b)
@@ -123,7 +127,7 @@ class Linear(Module):
         return self.gradInput
     
     def accGradParameters(self, input, gradOutput):
-        self.gradW = gradOutput.T.dot(input)
+        self.gradW = gradOutput.T.dot(input) * self.mask
         self.gradb = np.sum(gradOutput, axis=0)
     
     def zeroGradParameters(self):

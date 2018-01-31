@@ -231,11 +231,12 @@
 	We introduce two vectors $\bz_1 \in \bbR^{hn}_{+}, \|\bz_1\|_1 = 1$ and $\bz_2 \in \bbR^{rh}_{+}, \|\bz_2\|_1 = 1$ for matrices $\bW_1$ and $\bW_2$ respectively. 
 	The components of these vectors express the importance of each individual weight.
 	Let introduce the soft version of the problem~\ref{eq:quality_criteria}
-	\begin{align*}
-		\bz_1^* = \argmin_{\substack{\bz_1 \in \bbR^{hn}_{+} \| \bz_1 \|_1 = 1}} Q(\bz_1 | \bX, \by, f) \\
+	\begin{align}
+		\bz_1^* = \argmin_{\substack{\bz_1 \in \bbR^{hn}_{+} \| \bz_1 \|_1 = 1}} Q(\bz_1 | \bX, \by, f) 
+		\label{eq:soft_quality_criteria1}\\
 		\bz_2^* = \argmin_{\substack{ \bz_2 \in \bbR^{h}_{+} \| \bz_2 \|_1 = 1}} Q(\bz_2 | \bX, \by, f) .
-		\label{eq:soft_quality_criteria}
-	\end{align*}
+		\label{eq:soft_quality_criteria2}
+	\end{align}
 
 	Since the vectors $\bz_1$ and $\bz_2$ are obtained, we have to recover the optimal active subset $\cA^*$. 
 	Thresholds $d_1$ and $d_2$ are tuned for both layers. If the weight importance larger than corresponding threshold the weight is assumed to be active.
@@ -247,9 +248,15 @@
 	
 	The matrix $\bQ$ entries estimate the pairwise interactions between weights. The vector $\bb$ estimates the influence of each weight to the target variable.
 	
-	The interactions between weights measured by calculating the similarity function (correlation or mutual information) ...
+	\subsection*{Weight interactions}
+	To estimate the interactions between weights we measure similarity function $s(\cdot, \cdot)$ between input neurons for these weights. 
+	We use correlation coefficient and mutual information as similarity function.
+	Interactions between weights $\bW_1$ are measured by similarity between input features. 
+	Interactions between weights $\bW_2$ are measured by similarity between hidden layer neurons.
+	Since each neuron from one layer is connected to each neuron from the next layer, the interactions between weights from one neuron are the same.
+	The total number of distinct element in matrices $\bQ$ will be $n^2$ and $h^2$ for both layer respectively.
 	
-	\hrulefill
+	\subsection*{Weight relevances}
 	
 	The vector $\bb$ entries estimate the influence of the weights to the target variable. Let approximate the function $f(\bx | \bw)$ at the point $\bw$ by its linearization
 	\begin{equation}
@@ -266,29 +273,74 @@
 			\frac{\partial f(\bx_m | \bw)}{\partial w_r}
 		\end{pmatrix}.
 	\end{equation}
-	The $j$-th element of the vector $\bb$ equals the similarity function between the $j$-th column of the matrix $\mathbf{J}$ and the target vector $\by$.
+	The elements of the vector~$\bb$ equal the similarity function~$s(\cdot, \cdot)$ between the corresponding column of the matrix~$\mathbf{J}$ and the target vector~$\by$.
+	
+	\section{Final algorithm}
+	Let assume that we already have the solution $\bw^*$ of problem~\ref{eq:error_function}.
+	The next step is to determine the matrices $\bQ$ and the vectors $\bb$ for each layer. The way to construct them is described in previous section. 
+	We solve the problems~\ref{eq:soft_quality_criteria1}, \ref{eq:soft_quality_criteria2} to get the weights importances $\bz_1$ and $\bz_2$. 
+	Thresholding of these vectors gives the active set $\cA$.
+	
+	To summarize the described method we derive the pseudocode for the final algorithm~\ref{pseudocode}.
+	
 	
 	\begin{algorithm}[h]
 		\caption{}
+		\label{pseudocode}
 		\begin{algorithmic}[1]
 			\REQUIRE $\bX, \by$;
-			\ENSURE $\ba, \bw$;
-			\STATE $\ba^0 = (1, \dots, 1)^{\T}$
-			\STATE $\bw^0 = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f)$
-			\FOR{$k=0,\dots, K$}
-			\STATE $\ba^{k+1} = \argmin_{\ba \in \{0,1\}^r} \ba^{\T} \bQ(\bw^k) \ba - \bb^{\T}(\bw^k) \ba, \quad \text{subject to } \ba_{k+1} \odot (1 - \ba_k) = 0$
-			\STATE $\bw^{k+1} = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f), \quad \text{subject to } \bw \odot (1 - \ba_{k + 1}) = 0$
-			\ENDFOR
+			\ENSURE $\cA, \bw$;
+			\STATE $\cA^0 = \{1, \dots, p\}$
+			\STATE $\bw^* = \argmin_{\bw \in \bbR^p} S(\bw | \bX, \by, f)$
+			\vspace{0.1cm}
+			\STATE Compute $\bQ$'s and $\bb$'s			
+			\vspace{0.1cm}
+			\STATE 
+			$\bz_1^* = \argmin_{\substack{\bz_1 \in \bbR^{hn}_{+} \| \bz_1 \|_1 = 1}} Q(\bz_1 | \bX, \by, f)$, \quad
+			$\bz_2^* = \argmin_{\substack{ \bz_2 \in \bbR^{h}_{+} \| \bz_2 \|_1 = 1}} Q(\bz_2 | \bX, \by, f)$.			
+			\vspace{0.1cm}
+			\STATE Take the largest components of $\bz_1$ and $\bz_2$ as $\cA$
+			\vspace{0.1cm}
+			\STATE $\bw^* = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f), \quad \text{subject to } w_j = 0 \text{ for } j \notin \cA.$
 		\end{algorithmic}
 	\end{algorithm}
 
+	\section*{Experiment}
 	
-	\section{Thoughts}
-	\begin{itemize}
-		\item Постановка -> квадратичный критерий -> в случае линейной регрессии ... -> пусть Q, b зависят от параметров -> предлагаем итеративный алгоритм 
-		\item Итеративный алгоритм: либо начиная с первого слоя и дальше, а какой первый шаг?
-		\item может столбец матрицы Якоби должен коррелировать с ближайшим нейроном а не выходом
-		
-	\end{itemize}
+	To illustrate the proposed method we created the synthetic data. 
+	We sampled the subset of matrix $\bX$ from normal distribution and generated other columns by linear combination of sampled ones. 
+	Fig.~\ref{fig:corr_matrix} shows the absolute correlations between the matrix $\bX$ columns.
+	The matrix $\bX$ size is $800 \times 100$. 
+	The data was splitted into train and test in proportion 75\%/25\%.
 	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.7\linewidth]{figs/corr.eps}
+		\caption{Correlation coefficients between features for synthetic data}
+		\label{fig:corr_matrix}
+	\end{figure}
+
+	The model $f$ is a two-layer neural network with number of hidden units $h=40$.
+	The number of network parameter is $100 \times  40 + 40 \times 2 = 4080.$
+	We learned this network using SGD optimizer.
+	The learning process is illustrated in Fig.~\ref{fig:learning_orig}.
+	The network achieved $82\%$ accuracy on train set and $78\%$ on test set.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=\linewidth]{figs/orig_net.eps}
+		\caption{Original neural network learning.}
+		\label{fig:learning_orig}
+	\end{figure}
+
+	We applied proposed method to this dataset and the model $f$. The resulting active subset $\cA$ contains $82 + 80 = 162$ parameters. It is 25 times less than the original network.
+	We finetuned the network to adjust the weights.
+	The learning process for the reduced neural network is shown in Fig.~\ref{fig:learning_reduced}.
+
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=\linewidth]{figs/reduced_net.eps}
+		\caption{Reduced neural network learning.}
+		\label{fig:learning_reduced}
+	\end{figure}
 	\end{document}
