@@ -141,9 +141,19 @@
 	\newcommand{\argmin}{\mathop{\arg \min}\limits}
 	\newcommand{\argmax}{\mathop{\arg \max}\limits}
 	
+	\usepackage{tikz-cd}
+	
 	\begin{document}
 		
 	\section*{Problem Statement}
+	
+	\begin{tikzcd}[column sep=scriptsize]
+		\bX \in \mathbb{X} \arrow[d] \arrow[r]
+		& \bY \in \mathbb{Y} \arrow[d] \\
+		\mathbf{T} \in \mathbb{Z} \arrow[u] \arrow[r]
+		& \mathbf{U} \in \mathbb{Z} \arrow[u] \arrow[l]
+	\end{tikzcd}
+
 	We consider the problem of predicting an target variable $y$ given an $n$-dimensional object $\bx$. 
 	The target variable $y$ is assumed to be continuous for regression task and binary for classification task.
 	The goal is to build a model $f$ which outcomes a prediction for each input object.
