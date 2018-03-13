@@ -263,13 +263,13 @@ class MSECriterion(Criterion):
     def __init__(self):
         super(MSECriterion, self).__init__()
         
-    def updateOutput(self, input, target):   
-        self.output = np.sum(np.power(input - target, 2)) / input.shape[0]
+    def updateOutput(self, input, target):
+        self.output = np.sum(np.power(input.flatten() - target.flatten(), 2)) / input.shape[0]
         return self.output 
  
     def updateGradInput(self, input, target):
-        self.gradInput  = (input - target) / input.shape[0]
-        return self.gradInput
+        self.gradInput  = (input.flatten() - target.flatten()) / input.shape[0]
+        return self.gradInput[:, np.newaxis]
 
     def __repr__(self):
         return "MSECriterion"
