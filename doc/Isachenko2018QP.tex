@@ -126,16 +126,16 @@
 	\newcommand{\ba}{\mathbf{a}}
 	\newcommand{\bb}{\mathbf{b}}
 	\newcommand{\bw}{\mathbf{w}}
-	\newcommand{\bQ}{\mathbf{Q}}
-	\newcommand{\bW}{\mathbf{W}}
 	\newcommand{\by}{\mathbf{y}}
 	\newcommand{\bx}{\mathbf{x}}
 	\newcommand{\bz}{\mathbf{z}}
+	\newcommand{\cA}{\mathcal{A}}
+	\newcommand{\bJ}{\mathbf{J}}
+	\newcommand{\bQ}{\mathbf{Q}}
+	\newcommand{\bbR}{\mathbb{R}}
+	\newcommand{\bW}{\mathbf{W}}
 	\newcommand{\bY}{\mathbf{Y}}
 	\newcommand{\bX}{\mathbf{X}}
-	\newcommand{\cA}{\mathcal{A}}
-	\newcommand{\cJ}{\mathcal{J}}
-	\newcommand{\bbR}{\mathbb{R}}
 	
 	\newcommand{\T}{{\text{\tiny\sffamily\upshape\mdseries T}}}
 	\newcommand{\argmin}{\mathop{\arg \min}\limits}
@@ -146,45 +146,31 @@
 	\begin{document}
 		
 	\section*{Problem Statement}
-	
-	\begin{tikzcd}[column sep=scriptsize]
-		\bX \in \mathbb{X} \arrow[d] \arrow[r]
-		& \bY \in \mathbb{Y} \arrow[d] \\
-		\mathbf{T} \in \mathbb{Z} \arrow[u] \arrow[r]
-		& \mathbf{U} \in \mathbb{Z} \arrow[u] \arrow[l]
-	\end{tikzcd}
 
-	We consider the problem of predicting an target variable $y$ given an $n$-dimensional object $\bx$. 
-	The target variable $y$ is assumed to be continuous for regression task and binary for classification task.
+	We consider the regression problem of predicting an target variable $y \in \bbR$ given an object $\bx \bbR^{n}$. 
 	The goal is to build a model $f$ which outcomes a prediction for each input object.
-	We assume that the function~$f (\bx | \bw)$ is a feed-forward dense neural network with 1 hidden, and 1 output layer. The hidden layer dimension is denoted by $h$. The model output is
+	We assume that the function~$f (\bx | \bw)$ is a feed-forward dense neural network with 1 hidden, and output layer. The hidden layer dimension is denoted by $h$. The model output is
 	\[
-	f(\bx | \bw) = \sigma_2\left(\bW_2 \sigma_1(\bW_1 \bx)\right),
+		f(\bx | \bw) = \sigma_2\left(\bW_2 \sigma_1(\bW_1 \bx)\right),
 	\]
 	where $\bW_1 \in \bbR^{h \times n}$, $\bW_2 \in \bbR^{1 \times h}$ are weight matrices, $\sigma_1$, $\sigma_2$ are activation functions applied to each input component. We omitted the bias terms for simplicity.
-	Let denote by $\bw = (\text{vec}(\bW_1), \text{vec}(\bW_2)) \in \bbR^p$ a joint weight vector, where $p=h(n + 1)$.
+	Let denote by $\bw = (\text{vec}(\bW_1), \text{vec}(\bW_2)) \in \bbR^p$ a joint weight vector, where $p=h(n + 1)$ is the total number of weights.
 	
 	Let assume that we are given the design matrix~$\bX = [\bx_1, \dots, \bx_m]^{\T} \in \bbR^{m \times n}$ and the target vector~$\by = [y_1, \dots, y_m]^{\T} \in \bbR^{m}$. 
 	Each $i$-th matrix $\bX$ row represents an object which is associated with the $i$-th vector~$\by$ element.
 	The goal is to find the optimal weight vector $\bw^*$.
 	
-	The weights~$\bw$ are fitted by the minimization of an error function
+	The weights~$\bw$ are fitted by the minimization of an error function:
 	\begin{equation}
 	\bw^* = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f).
 	\label{eq:error_function}
 	\end{equation}
-	The most common choices for the error function~$S(\bw | \bX, \by, f)$ are
-	\begin{itemize}
-		\item squared error for regression task: 
-		$$
-			S(\bw | \bX, \by, f) = \sum_{i=1}^m \| y_i - f(\bx_i | \bw)\|^2;
-		$$
-		\item cross-entropy for classification task: 
-		$$
-			S(\bw | \bX, \by, f) = \sum_{i=1}^m \left[y_i \log f (\bx_i | \bw) + (1-y_i) \log (1 - f (\bx_i | \bw))\right].
-		$$
-	\end{itemize}
-	The problem~\ref{eq:error_function} could be solved by one of the neural network optimization methods~[].
+	The most common choice for the error function~$S(\bw | \bX, \by, f)$ is the squared error between real target values and predicted ones
+	\[
+		S(\bw | \bX, \by, f) =  \| \by - \mathbf{f}(\bX | \bw)\|_2^2 = \sum_{i=1}^m (y_i - f(\bx_i | \bw))^2.
+	\]
+
+	The problem~\ref{eq:error_function} could be solved by any neural network optimization method~[].
 	
 	The number of model weights~$p$ could be extremely huge. 
 	In this case the solution of the problem~\ref{eq:error_function} leads to overfitting. 
@@ -205,34 +191,94 @@
 		\label{eq:reduced_error_function}
 	\end{equation}
 	
-	\section*{Feature selection}
+	\section*{QPFS}
 	
-	To find the optimal subset $\cA^*$ we suggest to use the approach similar to the mRMR method for feature selection problem. 
-	This method tries to select features which have the minimal redundancy and maximum relevance.
+	To find the optimal subset $\cA^*$ we suggest to use QPFS algorithm.
+	The algorithm solves the linear regression problem, where the model $f(\bx | \bw) = \bx^{\T} \bw$
+	\[
+		S(\bw | \bX, \by, f) =  \| \by - \bX \bw\|_2^2 \rightarrow\min_{\bw \in \bbR^{n}}.
+	\]
+	The goal of the QPFS is to select not correlated features which are relevant to target vector.
 	To formalise this approach let introduce two functions: Sim and Rel. 
 	The former measures the redundancy between features, the latter contains relevances between each feature and target vector. 
 	We want to minimize the Sim function and maximize the Rel simultaneously.
-	The mRMR method uses the difference of these functions
-	$\text{Sim} -\text{Rel}$ to choose the optimal feature subset.
 	
 	The QPFS method offers the explicit way to construct the functions Sim and Rel. 
-	The method minimize the following functional
+	The method minimizes the following functional
 	\begin{equation}
-		(1 - \alpha) \bz^{\T} \bQ \bz - \alpha \mathbf{b}^{\T} \bz \rightarrow \min_{\substack{\bz \in \bbR^n_+ \\ \|\bz\|_1 = 1}}.
+		\underbrace{\bz^{\T} \bQ \bz}_{\text{Sim}} - \alpha \cdot \underbrace{\vphantom{()} \mathbf{b}^{\T} \bz}_{\text{Rel}} \rightarrow \min_{\bz \in [0, 1]^n}.
 		\label{eq:quadratic_problem}
 	\end{equation}
 	This functional is an analogue of the described quality criteria~\ref{eq:quality_criteria}.
   	The first term is associated with the Sim function and the second with the Rel. 
-  	The matrix $\bQ \in \bbR^{n \times n}$ entries measures the pairwise similarities between features. 
-  	The vector $\mathbf{b} \in \bbR^n$ express the similarities between each feature and the target vector.
+  	The matrix $\bQ \in \bbR^{n \times n}$ entries measure the pairwise similarities between features. 
+  	The vector $\mathbf{b} \in \bbR^n$ expresses the similarities between each feature and the target vector~$\by$.
   	The normalized vector~$\bz$ shows the importance of each feature. 
   	This approach penalizes the dependent features and encourages features relevant to the target. 
-  	The parameter $\alpha$ allows to control the impact of the Sim and the Rel terms.
-  	To find the optimal feature subset the thresholding for $\bz$ could be applied.
+  	The parameter $\alpha$ allows to control the trade-off of the Sim and the Rel terms.
+  	To find the optimal feature subset the thresholding for $\bz$ is applied
+  	\[
+  		j \in \mathcal{A} \Leftrightarrow z_j > \tau.
+  	\]
   	
   	To measure similarity it was proposed to use the absolute value of sample Pearson correlation coefficient or sample mutual information.
-  	The problem~\ref{eq:quadratic_problem} is convex if the matrix $\bQ$ is positive semidefinite. In general it is not always true. To satisfy this condition one could replace this matrix by $\bQ - \lambda_{\text{min}} \mathbf{I}$, where $\lambda_{\text{min}} $ is a minimal eigenvalue of~$\bQ$.
-  	  	
+  	The problem~\ref{eq:quadratic_problem} is convex if the matrix~$\bQ$ is positive semidefinite. In general it is not always true. To satisfy this condition we replace this matrix by $\bQ - \lambda_{\text{min}} \mathbf{I}$, where $\lambda_{\text{min}} $ is a minimal eigenvalue of~$\bQ$.
+  	
+  	\section*{Model linearization}
+  	Let assume that we have the model $f(\bx | \bw)$ and we want to find the new weights by adding the updates $\Delta \bw$ to the existing weights $\bw$. Similar to Levenberg-Marquardt algorithm, we use the linear approximation of the model
+  	\[
+	  	\mathbf{f}(\bX | \bw + \Delta \bw) \approx \mathbf{f}(\bX | \bw) + \bJ \cdot \Delta  \bw
+	\]
+	
+	where $\mathbf{J} \in \bbR^{m \times p}$ is a Jacobian matrix
+	\begin{equation}
+		\bJ = 
+		\begin{pmatrix}
+		\frac{\partial f(\bx_1 | \bw)}{\partial w_1} & \dots & 
+		\frac{\partial f(\bx_1 | \bw)}{\partial w_r} \\
+		\dots & \dots & \dots \\
+		\frac{\partial f(\bx_m | \bw)}{\partial w_1} & \dots & 
+		\frac{\partial f(\bx_m | \bw)}{\partial w_r}
+		\end{pmatrix}.
+	\end{equation}
+	In this case the problem~\ref{eq:error_function} is a linear regression problem with the target vector $\by - \mathbf{f}(\bX | \bw)$, matrix $\bJ$ and weights $\Delta \bw$
+	\[
+		S(\bw + \Delta \bw | \bX, \by, f) =  \| \by - \mathbf{f}(\bX | \bw + \Delta \bw)\|_2^2 \approx  \| (\by - \mathbf{f}(\bX | \bw)) - \bJ \cdot \Delta  \bw\|_2^2.
+	\]
+  	To find the most significant set of weights for the current point $\bw$ we can apply QPFS algorithm. Significance means the relevance of the weight update to the residual vector and pairwise weights updates independence through training data.
+  	
+  	\section*{Jacobian matrix }
+  	
+  	\section*{Experiment}
+  	In the experiment we used the Boston House Pricing dataset (objects: 506, features: 13). 
+  	
+  	\begin{figure}[h]
+  		\includegraphics[width=\linewidth]{figs/qpfs_corr_vs_info_wrt_alpha.eps}
+  		\caption{QPFS feature scores with respect to $\alpha$ coefficient}
+  		\label{fig:qpfs_corr_vs_info_wrt_alpha}
+  	\end{figure}
+  
+   	\begin{figure}[h]
+   		\includegraphics[width=\linewidth]{figs/qpfs_nn_corr_wrt_alpha.eps}	 
+   		\caption{Neural networks weight scores with respect to $\alpha$ coefficient for correlation similarity measure}
+   	\end{figure}	  
+   
+   \begin{figure}[!h]	
+   	\includegraphics[width=\linewidth]{figs/qpfs_nn_info_wrt_alpha.eps}	 
+   	\caption{Neural networks weight scores with respect to $\alpha$ coefficient for mutual information similarity measure}
+   	\label{fig:qpfs_nn_info_wrt_alpha}
+   \end{figure}	
+
+	\begin{figure}[!h]	
+		\includegraphics[width=0.8\linewidth]{figs/qpfs_nn_weight_maps.eps}	 
+	  	\caption{Neural network weight scores maps for mutual information similarity coefficient}
+		\label{fig:qpfs_nn_weight_maps}
+	\end{figure}
+	
+   \newpage
+   \hrulefill
+   
+   OLD VERSION
   	\section*{Model weights selection}
   	
 	We propose the algorithm that extends the quadratic programming methodology to the case of model weights selection.
