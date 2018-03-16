@@ -235,10 +235,10 @@
 		\bJ = 
 		\begin{pmatrix}
 		\frac{\partial f(\bx_1 | \bw)}{\partial w_1} & \dots & 
-		\frac{\partial f(\bx_1 | \bw)}{\partial w_r} \\
+		\frac{\partial f(\bx_1 | \bw)}{\partial w_p} \\
 		\dots & \dots & \dots \\
 		\frac{\partial f(\bx_m | \bw)}{\partial w_1} & \dots & 
-		\frac{\partial f(\bx_m | \bw)}{\partial w_r}
+		\frac{\partial f(\bx_m | \bw)}{\partial w_p}
 		\end{pmatrix}.
 	\end{equation}
 	In this case the problem~\ref{eq:error_function} is a linear regression problem with the target vector $\by - \mathbf{f}(\bX | \bw)$, matrix $\bJ$ and weights $\Delta \bw$
@@ -247,7 +247,7 @@
 	\]
   	To find the most significant set of weights for the current point $\bw$ we can apply QPFS algorithm. Significance means the relevance of the weight update to the residual vector and pairwise weights updates independence through training data.
   	
-  	\section*{Jacobian matrix }
+  	We use backpropagation procedure to update the network weights. The most of the neural network optimization methods use the gradient of the model to update network weights. It allows to get the Jacobian matrix $\bJ$ for free from optimization process. 
   	
   	\section*{Experiment}
   	In the experiment we used the Boston House Pricing dataset (objects: 506, features: 13). 
