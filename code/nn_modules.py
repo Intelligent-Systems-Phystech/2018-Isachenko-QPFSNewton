@@ -98,7 +98,7 @@ class Linear(Module):
         super(Linear, self).__init__()
         
         # This is a nice initialization
-        stdv = 1./np.sqrt(n_in)
+        stdv = 1. / np.sqrt(n_in)
         if W_init is not None:
             assert W_init.shape == (n_out, n_in), "The weights have not appropriate shape"
             self.W = W_init

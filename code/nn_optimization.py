@@ -16,7 +16,7 @@ def sgd_momentum(x, dx, config, state):
             
 def nesterov(x, dx, config, state):
     state.setdefault('old_grad', {})
-    
+
     i = 0 
     for cur_layer_x, cur_layer_dx in zip(x, dx): 
         for cur_x, cur_dx in zip(cur_layer_x, cur_layer_dx):
