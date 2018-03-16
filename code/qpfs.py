@@ -3,10 +3,12 @@ import sklearn.feature_selection as sklfs
 import scipy as sc
 import cvxpy as cvx
 
+np.random.seed(42)
+
 
 class QPFS:
     def __init__(self, sim='corr'):
-        if sim not in ['corr', 'info']:
+        if sim not in ['corr', 'info', 'symuncert']:
             raise ValueError('Similarity measure should be "corr" or "info"')
         self.sim = sim
     
@@ -14,6 +16,7 @@ class QPFS:
 
         n_features = X.shape[1]
         self.Q = np.ones([n_features, n_features])
+        self.b = np.zeros([n_features, 1])
         
         if self.sim == 'corr':
             y_mat = y[:, np.newaxis] if len(y.shape) == 1 else y[:]
@@ -21,12 +24,20 @@ class QPFS:
             corr = np.corrcoef(np.hstack([X[:, idxs_nz], y_mat]).T)
             for i, idx in enumerate(idxs_nz):
                 self.Q[idx, idxs_nz] = np.abs(corr[i, :-1])
-            self.b = np.abs(corr[:-1, [-1]])
+            self.b[idxs_nz] = np.abs(corr[:-1, [-1]])
         elif self.sim == 'info':
             for j in range(n_features):
                 self.Q[:, j] = sklfs.mutual_info_regression(X, X[:, j])
-            self.b = sklfs.mutual_info_regression(X, y)
-        
+            self.b = sklfs.mutual_info_regression(X, y)[:, np.newaxis]
+        elif self.sim == 'symuncert':
+            X_ent = np.zeros([n_features + 1])
+            for j in range(n_features):
+                X_ent[j] = sklfs.mutual_info_regression(X[:, [j]], X[:, j])
+            X_ent[j + 1] = sklfs.mutual_info_regression(y[:, np.newaxis], y)
+            for j in range(n_features):
+                self.Q[:, j] = sklfs.mutual_info_regression(X, X[:, j], n_neighbors=5) * 2 / (X_ent[:-1] + X_ent[j])
+            self.b = sklfs.mutual_info_regression(X, y, n_neighbors=5) * 2 / X_ent[-1] / X_ent[:-1]
+            self.b = self.b[:, np.newaxis]
         self.Q = np.nan_to_num(self.Q)
         self.b = np.nan_to_num(self.b)
         
