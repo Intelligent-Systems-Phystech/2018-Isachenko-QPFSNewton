@@ -148,16 +148,9 @@
 	\section*{Problem Statement}
 
 	We consider the regression problem of predicting an target variable $y \in \bbR$ given an object $\bx \bbR^{n}$. 
-	The goal is to build a model $f$ which outcomes a prediction for each input object.
-	We assume that the function~$f (\bx | \bw)$ is a feed-forward dense neural network with 1 hidden, and output layer. The hidden layer dimension is denoted by $h$. The model output is
-	\[
-		f(\bx | \bw) = \sigma_2\left(\bW_2 \sigma_1(\bW_1 \bx)\right),
-	\]
-	where $\bW_1 \in \bbR^{h \times n}$, $\bW_2 \in \bbR^{1 \times h}$ are weight matrices, $\sigma_1$, $\sigma_2$ are activation functions applied to each input component. We omitted the bias terms for simplicity.
-	Let denote by $\bw = (\text{vec}(\bW_1), \text{vec}(\bW_2)) \in \bbR^p$ a joint weight vector, where $p=h(n + 1)$ is the total number of weights.
-	
+	The goal is to build a model $f(\bx | \bw), \bw \in \mathbb{R}^p$ which outcomes a prediction for each input object.
 	Let assume that we are given the design matrix~$\bX = [\bx_1, \dots, \bx_m]^{\T} \in \bbR^{m \times n}$ and the target vector~$\by = [y_1, \dots, y_m]^{\T} \in \bbR^{m}$. 
-	Each $i$-th matrix $\bX$ row represents an object which is associated with the $i$-th vector~$\by$ element.
+	Each $i$-th matrix~$\bX$ row represents an object which is associated with the $i$-th vector~$\by$ element.
 	The goal is to find the optimal weight vector $\bw^*$.
 	
 	The weights~$\bw$ are fitted by the minimization of an error function:
@@ -165,7 +158,7 @@
 	\bw^* = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f).
 	\label{eq:error_function}
 	\end{equation}
-	The most common choice for the error function~$S(\bw | \bX, \by, f)$ is the squared error between real target values and predicted ones
+	The most common choice for the error function~$S(\bw | \bX, \by, f)$ in the regression task is the squared error between real target values and predicted ones
 	\[
 		S(\bw | \bX, \by, f) =  \| \by - \mathbf{f}(\bX | \bw)\|_2^2 = \sum_{i=1}^m (y_i - f(\bx_i | \bw))^2.
 	\]
@@ -178,7 +171,7 @@
 	The weights which are not active are supposed to be zero.
 	To choose the subset~$\cA$ from all possible $2^p$ combinations let introduce a quality criteria~$Q(\cA | \bX, \by, f)$. 
 	This function evaluates the quality of a particular active set $\cA$. 
-	We desire to find the optimal subset $\cA^*$ which minimize the function
+	We desire to find the optimal subset $\cA^*$ which minimizes the quality criteria
 	\begin{equation}
 		\cA^* = \argmin_{\cA \subseteq \{1, \dots, p\}} Q(\cA | \bX, \by, f).
 		\label{eq:quality_criteria}
@@ -187,14 +180,14 @@
 	If the solution $\cA^*$ of the~\ref{eq:quality_criteria} is given the next step is to determine the optimal model weights	$\bw^*$ by solving a problem
 	
 	\begin{equation}
-		\bw^* = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f), \quad \text{subject to } w_j = 0 \text{ for } j \notin \cA^*.
+		\bw^* = \argmin_{\bw \in \bbR^p} S(\bw | \bX, \by, f), \quad \text{subject to } w_j = 0 \text{ for } j \notin \cA^*.
 		\label{eq:reduced_error_function}
 	\end{equation}
 	
 	\section*{QPFS}
 	
 	To find the optimal subset $\cA^*$ we suggest to use QPFS algorithm.
-	The algorithm solves the linear regression problem, where the model $f(\bx | \bw) = \bx^{\T} \bw$
+	The original algorithm selects features for the linear regression task, where the model $f(\bx | \bw) = \bx^{\T} \bw$ and the problem~\ref{eq:error_function}
 	\[
 		S(\bw | \bX, \by, f) =  \| \by - \bX \bw\|_2^2 \rightarrow\min_{\bw \in \bbR^{n}}.
 	\]
@@ -214,20 +207,22 @@
   	The matrix $\bQ \in \bbR^{n \times n}$ entries measure the pairwise similarities between features. 
   	The vector $\mathbf{b} \in \bbR^n$ expresses the similarities between each feature and the target vector~$\by$.
   	The normalized vector~$\bz$ shows the importance of each feature. 
-  	This approach penalizes the dependent features and encourages features relevant to the target. 
-  	The parameter $\alpha$ allows to control the trade-off of the Sim and the Rel terms.
-  	To find the optimal feature subset the thresholding for $\bz$ is applied
+  	This functional penalizes the dependent features by the function Sim and encourages features relevant to the target by the function Rel. 
+  	The parameter $\alpha$ allows to control the trade-off between the Sim and the Rel terms.
+  	To find the optimal feature subset the thresholding for $\bz$ is applied:
   	\[
   		j \in \mathcal{A} \Leftrightarrow z_j > \tau.
   	\]
   	
-  	To measure similarity it was proposed to use the absolute value of sample Pearson correlation coefficient or sample mutual information.
-  	The problem~\ref{eq:quadratic_problem} is convex if the matrix~$\bQ$ is positive semidefinite. In general it is not always true. To satisfy this condition we replace this matrix by $\bQ - \lambda_{\text{min}} \mathbf{I}$, where $\lambda_{\text{min}} $ is a minimal eigenvalue of~$\bQ$.
+  	To measure similarity it was proposed to use the absolute value of sample Pearson correlation coefficient or sample mutual information between pairs of features for the Sim function and between features and target vector for the Rel function.
+  	The problem~\ref{eq:quadratic_problem} is convex if the matrix~$\bQ$ is positive semidefinite. In general it is not always true. 
+  	To satisfy this condition we shift the matrix $\bQ$ spectrum and replace the matrix~$\bQ$ by $\bQ - \lambda_{\text{min}} \mathbf{I}$, where $\lambda_{\text{min}} $ is a $\bQ$ minimal eigenvalue.
   	
   	\section*{Model linearization}
-  	Let assume that we have the model $f(\bx | \bw)$ and we want to find the new weights by adding the updates $\Delta \bw$ to the existing weights $\bw$. Similar to Levenberg-Marquardt algorithm, we use the linear approximation of the model
+  	Let assume that we have the model $f(\bx | \bw)$ and the weight vector $\bw$ and we want to find the new weights by adding the updates $\Delta \bw$ to the existing weights $\bw$. 
+  	Similar to the Levenberg-Marquardt algorithm, we use the linear approximation of the model
   	\[
-	  	\mathbf{f}(\bX | \bw + \Delta \bw) \approx \mathbf{f}(\bX | \bw) + \bJ \cdot \Delta  \bw
+	  	\mathbf{f}(\bX | \bw + \Delta \bw) \approx \mathbf{f}(\bX | \bw) + \bJ \cdot \Delta  \bw,
 	\]
 	
 	where $\mathbf{J} \in \bbR^{m \times p}$ is a Jacobian matrix
@@ -242,161 +237,109 @@
 		\end{pmatrix}.
 	\end{equation}
 	In this case the problem~\ref{eq:error_function} is a linear regression problem with the target vector $\by - \mathbf{f}(\bX | \bw)$, matrix $\bJ$ and weights $\Delta \bw$
-	\[
+	\begin{equation}
 		S(\bw + \Delta \bw | \bX, \by, f) =  \| \by - \mathbf{f}(\bX | \bw + \Delta \bw)\|_2^2 \approx  \| (\by - \mathbf{f}(\bX | \bw)) - \bJ \cdot \Delta  \bw\|_2^2.
-	\]
-  	To find the most significant set of weights for the current point $\bw$ we can apply QPFS algorithm. Significance means the relevance of the weight update to the residual vector and pairwise weights updates independence through training data.
+	\label{eq:qpfs_nn}
+	\end{equation}
+  	To find the most significant set of weights for the current point $\bw$ we can apply QPFS algorithm. 
+  	Significance means the relevance of the weight update to the residual vector and pairwise weights updates independence through training data.
   	
-  	We use backpropagation procedure to update the network weights. The most of the neural network optimization methods use the gradient of the model to update network weights. It allows to get the Jacobian matrix $\bJ$ for free from optimization process. 
+  	We use backpropagation procedure to update the network weights. 
+  	The most of the neural network optimization methods use the gradient of the model to update network weights. 
+  	It allows to get the Jacobian matrix $\bJ$ for free from optimization process. 
+  	
+  	We want to investigate the dependence of the QPFS solution for the problem~\ref{eq:qpfs_nn}. 
+  	Let assume that we have some weight vector~$\bw^0$ which lies near the optimal weight vector~$\bw^*$. 
+  	We consider the line segment
+  	\[
+  		\bw_{\beta} = \beta \bw^* + (1 - \beta) \bw^0; \, \beta \in [0, 1] .
+  	\]
+  	
+  	\subsection*{Linear model}
+  	In the case of linear model $f(\bx | \bw) = \bx^{\T} \bw$, the Jacobian matrix~$\bJ$ equals the design matrix~$\bX$. 
+  	The problem~\ref{eq:qpfs_nn} has the form
+  	\[
+  		 \| (\by - \mathbf{f}(\bX | \bw)) - \bJ \cdot \Delta  \bw\|_2^2 = \| (\by - \bX \bw) - \bX \cdot \Delta  \bw\|_2^2.
+  	\]
+  	
+  	The matrix $\bQ$ entries are the similarities between features, the vector $\bb$ entries are the feature relevances to the residual vector $\by - \bX \bw$. 
+  	Therefore, the $\bQ$ matrix is constant with respect to the model weights $\bw$. 
+  	The vector $\bb$ entries decreases as the $\beta$ coefficient is getting smaller. The residual vector $\by - \bX \bw^*$ is orthogonal to the matrix $\bX$ columns for the optimal weights $\bw^*$, since the correlation and the mutual information coefficients equals zero for the orthogonal vectors.
+  	
+  	\subsection*{Two layer neural network}
+  	We consider the feed-forward two layer neural network as the nonlinear model. In this case the model~$f(\bx | \bw)$ is given by
+  	\[
+  		f(\bx | \bw) = \sigma(\bx^{\T} \bW_1) \bW_2.
+  	\]
+  	Here~$\bW_1 \in \bbR^{n \times h}$ the weight matrix which connects the input features with $h$ hidden units, $\sigma(\cdot)$ is a nonlinearity function which applied element-wise, and $\bW_2 \in \bbR^{h \times 1}$ the weight matrix which connects the hidden units with output. 
+  	The model weight vector~$\bw$ is a concatenation of vectorized matrices~$\bW_1$, $\bW_2$.
+  	
+  	The first order optimization condition tells that in the optimal point the first derivatives of the error function are equal to
+  	\[
+  		\left.\frac{\partial S(\bw | \bX, \by, f)}{\partial \bw} \right|_{\bw = \bw^*}=  (\by - \mathbf{f}(\bX | \bw))^{\T} \mathbf{J}\Bigr|_{\bw=\bw^*} = 0.
+  	\]
+  	This implies the orthogonality between residual vector $\by - \mathbf{f}(\bX | \bw)$ and the columns of the Jacobian matrix $\bJ$. It means that in the optimum point $\bw^*$ the linear term $\bb$ will be around zero. 
   	
   	\section*{Experiment}
   	In the experiment we used the Boston House Pricing dataset (objects: 506, features: 13). 
   	
+  	First of all we investigate the influence of $\alpha$ coefficient to the QPFS function~\ref{eq:quadratic_problem}. Figure~\ref{fig:qpfs_corr_vs_info_wrt_alpha} shows the features scores $\bz \in \bbR^{13}$ for correlation and mutual information coefficients with respect to different $\alpha$. If $\alpha$ is large enough the Rel term is prevailed. All features is active in this case. The algorithm does not penalize features and selects features relevant to the target. As $\alpha$ goes down the Sim term starts to penalize feature interactions and the active set of features shrinks. It worth to note that correlations mutual information works in different ways.
+  	
   	\begin{figure}[h]
   		\includegraphics[width=\linewidth]{figs/qpfs_corr_vs_info_wrt_alpha.eps}
-  		\caption{QPFS feature scores with respect to $\alpha$ coefficient}
+  		\caption{QPFS scores with respect to $\alpha$ coefficient}
   		\label{fig:qpfs_corr_vs_info_wrt_alpha}
   	\end{figure}
   
-   	\begin{figure}[h]
-   		\includegraphics[width=\linewidth]{figs/qpfs_nn_corr_wrt_alpha.eps}	 
-   		\caption{Neural networks weight scores with respect to $\alpha$ coefficient for correlation similarity measure}
-   	\end{figure}	  
-   
-   \begin{figure}[!h]	
-   	\includegraphics[width=\linewidth]{figs/qpfs_nn_info_wrt_alpha.eps}	 
-   	\caption{Neural networks weight scores with respect to $\alpha$ coefficient for mutual information similarity measure}
-   	\label{fig:qpfs_nn_info_wrt_alpha}
-   \end{figure}	
+  The authors of the original QPFS paper suggested the way to select $\alpha$ and make Sim and Rel terms impact are equal
+  \[
+  	\alpha = \frac{\overline{\bQ}}{\overline{\bQ} + \overline{\bb}},
+  \] 
+  where $\overline{\bQ}$, $\overline{\bb}$ are the mean values of $\bQ$ and $\bb$ correspondingly.
+  
+  We fitted the linear model for this data.
+  The error landscape is shown in the figure~\ref{fig:linear_error} for two randomly selected weights. 
+  We add the random noise to the optimum weights $\bw^*$ to get the point $\bw^0$. The behaviour of the Rel term vector $\bb$ on the line segment between $\bw^0$ and $\bw^*$ is illustrated in the figure~\ref{fig:linear_b_wrt_beta}.
 
 	\begin{figure}[!h]	
+		\centering
+		\includegraphics[width=0.8\linewidth]{figs/linear_error.eps}	 
+		\caption{Error function landscape near optimal weight point for linear model.}
+		\label{fig:linear_error}
+	\end{figure}
+
+	\begin{figure}[!h]	
+		\centering
+		\includegraphics[width=\linewidth]{figs/linear_b_wrt_beta.eps}	 
+		\caption{Relevance scores for linear model with respect to $\beta$ coefficient.}
+		\label{fig:linear_b_wrt_beta}
+	\end{figure}
+
+	The landscape for the neural network model is more complex. We use only 2 hidden units to get not excessively complex model. The optimal weight vector $\bw^*$ is obtained by backpropagation optimization procedure. Figure~\ref{fig:neural_error} shows the error function on the grid of two neural network weights from~$\bW_1$. We use the same strategy to investigate how the linear term vector $\bb$ is changing moving from $\bw^0$ to $\bw^*$. The result are shown in the figure~\ref{fig:neural_b_wrt_beta}.
+	
+
+	\begin{figure}[!h]	
+		\centering
+		\includegraphics[width=0.8\linewidth]{figs/neural_error.eps}	 
+		\caption{Error function landscape near optimal weight point for neural network.}
+		\label{fig:neural_error}
+	\end{figure}
+	
+	\begin{figure}[!h]	
+		\centering
+		\includegraphics[width=\linewidth]{figs/neural_b_wrt_beta.eps}	 
+		\caption{Relevance scores for neural network with respect to $\beta$ coefficient.}
+		\label{fig:neural_b_wrt_beta}
+	\end{figure}
+
+	\begin{figure}[!h]	
+		\centering
 		\includegraphics[width=0.8\linewidth]{figs/qpfs_nn_weight_maps.eps}	 
-	  	\caption{Neural network weight scores maps for mutual information similarity coefficient}
+		\caption{Neural network weight scores maps for mutual information similarity coefficient}
 		\label{fig:qpfs_nn_weight_maps}
 	\end{figure}
-	
+				
    \newpage
    \hrulefill
-   
-   OLD VERSION
-  	\section*{Model weights selection}
-  	
-	We propose the algorithm that extends the quadratic programming methodology to the case of model weights selection.
-	Let suppose that the weights from different layers do not interact. 
-	This assumption allows to solve the model weights selection problem separately for each layer.
-	We introduce two vectors $\bz_1 \in \bbR^{hn}_{+}, \|\bz_1\|_1 = 1$ and $\bz_2 \in \bbR^{rh}_{+}, \|\bz_2\|_1 = 1$ for matrices $\bW_1$ and $\bW_2$ respectively. 
-	The components of these vectors express the importance of each individual weight.
-	Let introduce the soft version of the problem~\ref{eq:quality_criteria}
-	\begin{align}
-		\bz_1^* = \argmin_{\substack{\bz_1 \in \bbR^{hn}_{+} \| \bz_1 \|_1 = 1}} Q(\bz_1 | \bX, \by, f) 
-		\label{eq:soft_quality_criteria1}\\
-		\bz_2^* = \argmin_{\substack{ \bz_2 \in \bbR^{h}_{+} \| \bz_2 \|_1 = 1}} Q(\bz_2 | \bX, \by, f) .
-		\label{eq:soft_quality_criteria2}
-	\end{align}
-
-	Since the vectors $\bz_1$ and $\bz_2$ are obtained, we have to recover the optimal active subset $\cA^*$. 
-	Thresholds $d_1$ and $d_2$ are tuned for both layers. If the weight importance larger than corresponding threshold the weight is assumed to be active.
-	
-	Similarly to the authors of QPFS we use the quadratic quality criteria for each layer
-	\begin{equation}
-		Q(\bz | \bX, \by, f) = (1 - \alpha) \bz^{\T} \bQ\bz - \alpha \mathbf{b}^{\T} \bz.
-	\end{equation}
-	
-	The matrix $\bQ$ entries estimate the pairwise interactions between weights. The vector $\bb$ estimates the influence of each weight to the target variable.
-	
-	\subsection*{Weight interactions}
-	To estimate the interactions between weights we measure similarity function $s(\cdot, \cdot)$ between input neurons for these weights. 
-	We use correlation coefficient and mutual information as similarity function.
-	Interactions between weights $\bW_1$ are measured by similarity between input features. 
-	Interactions between weights $\bW_2$ are measured by similarity between hidden layer neurons.
-	Since each neuron from one layer is connected to each neuron from the next layer, the interactions between weights from one neuron are the same.
-	The total number of distinct element in matrices $\bQ$ will be $n^2$ and $h^2$ for both layer respectively.
-	
-	\subsection*{Weight relevances}
-	
-	The vector $\bb$ entries estimate the influence of the weights to the target variable. Let approximate the function $f(\bx | \bw)$ at the point $\bw$ by its linearization
-	\begin{equation}
-		\mathbf{f} (\bX | \bw + \Delta \bw) \approx \mathbf{f}(\bX | \bw) + \mathbf{J} \cdot \Delta \bw,
-	\end{equation}
-	where $\mathbf{J} \in \bbR^{m \times r}$ is a Jacobian matrix
-	\begin{equation}
-		\mathbf{J} = 
-		\begin{pmatrix}
-			\frac{\partial f(\bx_1 | \bw)}{\partial w_1} & \dots & 
-			\frac{\partial f(\bx_1 | \bw)}{\partial w_r} \\
-			\dots & \dots & \dots \\
-			\frac{\partial f(\bx_m | \bw)}{\partial w_1} & \dots & 
-			\frac{\partial f(\bx_m | \bw)}{\partial w_r}
-		\end{pmatrix}.
-	\end{equation}
-	The elements of the vector~$\bb$ equal the similarity function~$s(\cdot, \cdot)$ between the corresponding column of the matrix~$\mathbf{J}$ and the target vector~$\by$.
-	
-	\section{Final algorithm}
-	Let assume that we already have the solution $\bw^*$ of problem~\ref{eq:error_function}.
-	The next step is to determine the matrices $\bQ$ and the vectors $\bb$ for each layer. The way to construct them is described in previous section. 
-	We solve the problems~\ref{eq:soft_quality_criteria1}, \ref{eq:soft_quality_criteria2} to get the weights importances $\bz_1$ and $\bz_2$. 
-	Thresholding of these vectors gives the active set $\cA$.
-	
-	To summarize the described method we derive the pseudocode for the final algorithm~\ref{pseudocode}.
-	
-	
-	\begin{algorithm}[h]
-		\caption{}
-		\label{pseudocode}
-		\begin{algorithmic}[1]
-			\REQUIRE $\bX, \by$;
-			\ENSURE $\cA, \bw$;
-			\STATE $\cA^0 = \{1, \dots, p\}$
-			\STATE $\bw^* = \argmin_{\bw \in \bbR^p} S(\bw | \bX, \by, f)$
-			\vspace{0.1cm}
-			\STATE Compute $\bQ$'s and $\bb$'s			
-			\vspace{0.1cm}
-			\STATE 
-			$\bz_1^* = \argmin_{\substack{\bz_1 \in \bbR^{hn}_{+} \| \bz_1 \|_1 = 1}} Q(\bz_1 | \bX, \by, f)$, \quad
-			$\bz_2^* = \argmin_{\substack{ \bz_2 \in \bbR^{h}_{+} \| \bz_2 \|_1 = 1}} Q(\bz_2 | \bX, \by, f)$.			
-			\vspace{0.1cm}
-			\STATE Take the largest components of $\bz_1$ and $\bz_2$ as $\cA$
-			\vspace{0.1cm}
-			\STATE $\bw^* = \argmin_{\bw \in \bbR^r} S(\bw | \bX, \by, f), \quad \text{subject to } w_j = 0 \text{ for } j \notin \cA.$
-		\end{algorithmic}
-	\end{algorithm}
-
-	\section*{Experiment}
-	
-	To illustrate the proposed method we created the synthetic data. 
-	We sampled the subset of matrix $\bX$ from normal distribution and generated other columns by linear combination of sampled ones. 
-	Fig.~\ref{fig:corr_matrix} shows the absolute correlations between the matrix $\bX$ columns.
-	The matrix $\bX$ size is $800 \times 100$. 
-	The data was splitted into train and test in proportion 75\%/25\%.
-	
-	\begin{figure}[h]
-		\centering
-		\includegraphics[width=0.7\linewidth]{figs/corr.eps}
-		\caption{Correlation coefficients between features for synthetic data}
-		\label{fig:corr_matrix}
-	\end{figure}
-
-	The model $f$ is a two-layer neural network with number of hidden units $h=40$.
-	The number of network parameter is $100 \times  40 + 40 \times 2 = 4080.$
-	We learned this network using SGD optimizer.
-	The learning process is illustrated in Fig.~\ref{fig:learning_orig}.
-	The network achieved $82\%$ accuracy on train set and $78\%$ on test set.
-	
-	\begin{figure}[h]
-		\centering
-		\includegraphics[width=\linewidth]{figs/orig_net.eps}
-		\caption{Original neural network learning.}
-		\label{fig:learning_orig}
-	\end{figure}
-
-	We applied proposed method to this dataset and the model $f$. The resulting active subset $\cA$ contains $82 + 80 = 162$ parameters. It is 25 times less than the original network.
-	We finetuned the network to adjust the weights.
-	The learning process for the reduced neural network is shown in Fig.~\ref{fig:learning_reduced}.
-
-	\begin{figure}[h]
-		\centering
-		\includegraphics[width=\linewidth]{figs/reduced_net.eps}
-		\caption{Reduced neural network learning.}
-		\label{fig:learning_reduced}
-	\end{figure}
+  
 	\end{document}

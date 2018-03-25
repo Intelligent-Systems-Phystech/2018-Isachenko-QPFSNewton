@@ -35,8 +35,8 @@ class QPFS:
                 X_ent[j] = sklfs.mutual_info_regression(X[:, [j]], X[:, j])
             X_ent[j + 1] = sklfs.mutual_info_regression(y[:, np.newaxis], y)
             for j in range(n_features):
-                self.Q[:, j] = sklfs.mutual_info_regression(X, X[:, j], n_neighbors=5) * 2 / (X_ent[:-1] + X_ent[j])
-            self.b = sklfs.mutual_info_regression(X, y, n_neighbors=5) * 2 / X_ent[-1] / X_ent[:-1]
+                self.Q[:, j] = sklfs.mutual_info_regression(X, X[:, j], n_neighbors=5) * 2 / (X_ent[:-1] + X_ent[j] + eps)
+            self.b = sklfs.mutual_info_regression(X, y, n_neighbors=5) * 2 / (X_ent[-1] + X_ent[:-1] + eps)
             self.b = self.b[:, np.newaxis]
         self.Q = np.nan_to_num(self.Q)
         self.b = np.nan_to_num(self.b)
@@ -45,24 +45,21 @@ class QPFS:
         if self.lamb_min < 0:
             self.Q = self.Q - (self.lamb_min - eps) * np.eye(*self.Q.shape)
     
-    def get_alpha(self, kind=0, **kwargs):
-        if kind == 0:
-            return 2 * self.Q.mean() / self.b.mean()
-        elif kind == 1:
-            return self.Q.mean() * len(self.b) * kwargs['k'] / self.b.mean()
-        else:
-            return 2 * kwargs['k'] * self.Q.sum() / self.b.sum()
+    def get_alpha(self):
+        return self.Q.mean() / (self.Q.mean() + self.b.mean())
 
     def fit(self, X, y, alpha=None):
         self.get_Qb(X, y)
-        self.alpha = alpha if alpha else self.get_alpha(kind=0)
+        self.alpha = alpha if alpha else self.get_alpha()
         self.solve_problem()
     
     def solve_problem(self):
         n = self.Q.shape[0]
         x = cvx.Variable(n)
-        objective = cvx.Minimize(cvx.quad_form(x, self.Q) - self.alpha * self.b.T * x)
-        constraints = [x >= 0, x <= 1]
+        c = np.ones((n, 1))
+        objective = cvx.Minimize(0.5 * (1 - self.alpha) * cvx.quad_form(x, self.Q) - 
+                                 self.alpha * self.b.T * x)
+        constraints = [x >= 0, c.T * x <= 1]
         prob = cvx.Problem(objective, constraints)
 
         prob.solve()
