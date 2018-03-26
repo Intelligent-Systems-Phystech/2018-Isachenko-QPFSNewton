@@ -21,10 +21,11 @@ class QPFS:
         if self.sim == 'corr':
             y_mat = y[:, np.newaxis] if len(y.shape) == 1 else y[:]
             idxs_nz = np.where(np.sum(X ** 2, axis = 0) != 0)[0]
-            corr = np.corrcoef(np.hstack([X[:, idxs_nz], y_mat]).T)
-            for i, idx in enumerate(idxs_nz):
-                self.Q[idx, idxs_nz] = np.abs(corr[i, :-1])
-            self.b[idxs_nz] = np.abs(corr[:-1, [-1]])
+            if len(idxs_nz) > 0:
+                corr = np.corrcoef(np.hstack([X[:, idxs_nz], y_mat]).T)
+                for i, idx in enumerate(idxs_nz):
+                    self.Q[idx, idxs_nz] = np.abs(corr[i, :-1])
+                self.b[idxs_nz] = np.abs(corr[:-1, [-1]])
         elif self.sim == 'info':
             for j in range(n_features):
                 self.Q[:, j] = sklfs.mutual_info_regression(X, X[:, j])
