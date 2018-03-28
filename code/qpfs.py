@@ -60,7 +60,7 @@ class QPFS:
         c = np.ones((n, 1))
         objective = cvx.Minimize(0.5 * (1 - self.alpha) * cvx.quad_form(x, self.Q) - 
                                  self.alpha * self.b.T * x)
-        constraints = [x >= 0, c.T * x <= 1]
+        constraints = [x >= 0, c.T * x == 1]
         prob = cvx.Problem(objective, constraints)
 
         prob.solve()
