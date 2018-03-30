@@ -147,17 +147,65 @@
 	\newcommand{\argmin}{\mathop{\arg \min}\limits}
 	\newcommand{\argmax}{\mathop{\arg \max}\limits}
 	
-	\usepackage{tikz-cd}
 	
 	\begin{document}
 		
+		\title
+	{Quadratic programming optimization for Newton method}
+	\date{}
+	\maketitle
+	\begin{center}
+		R.\,V.~Isachenko,
+		V.\,V.~Strijov
+	\end{center}
+	\textbf{Abstract:} 
+	To optimize the model parameters the Newton method is widely used. 
+	This method is second order optimization procedure that is unstable in real applications. 
+	In this paper we propose the procedure to make the optimization process robust. 
+	The idea is to select the set of model parameters which have to be optimized in the current step of optimization procedure.
+	We show that in the case of nonlinear regression and logistic regression models the parameters selection could be performed by Quadratic Programming Feature Selection algorithm.
+	It allows to find the set of independent parameters that are responsible for the residuals.
+	We carried out the experiment to show the proposed method ...
+	
+	\bigskip
+	\textbf{Keywords}: nonlinear regression, logistic regression, Newton method, quadratic programming feature selection
+	
+	\section*{Introduction}
+	The modern machine learning models have the extremely large number of parameters. 
+	The error function for such models have the complex landscape with multiple local minimum. 
+	The optimization procedure in this case brings to the different solutions each time.
+	
+	The optimization procedure is the iterative process. 
+	In each step the updates of the parameters are added to the current point to get the next approximation.
+	There have been developed a lot of first order optimization algorithms which use the first derivatives of the error function. 
+	The most famous algorithms are SGD, Nesterov momentum~\cite{nesterov1983momentum}, Adagrad~\cite{duchi2011adagrad}, Adam~\cite{kingma2014adam}. 
+	These algorithms and widely used for deep neural networks optimization~\cite{goodfellow2016deeplearningbook}. 
+	The Newton algorithm is the second order algorithm which use the second derivatives of the error function. 
+	It allows to find more reasonable updates and converge with much less number of iterations.
+	The drawback of the second order optimization methods is the dealing with Hessian matrix, since this matrix could be huge and even ill-conditioned. 
+	The optimization in this case could be computationally expensive and could diverge. 
+	To overcome this problem the approximations for the Hessian matrix and regularization are applied~\cite{avriel2003nonlinear,blaschke1997convergence}.
+	In~\cite{botev2017newtondeeplearning} the Newton method is implemented to the deep neural networks.
+	
+	In this paper we suggest to select the set of model parameters which we optimize in each optimization step.
+	We consider two problems: nonlinear regression with squared error function and logistic regression with cross-entropy error function.
+	For nonlinear regression the Newton method and model linearization leads to the Gauss-Newton method. 
+	In each step the linear regression problem is solved. 
+	We use the two-layer neural network as the nonlinear model. 
+	The Newton method for logistic regression brings to Iteratively Least Squares~(IRLS) algorithm. 
+	Here the optimization step is made in the direction given also by the linear regression problem solution.
+	
+	To select set of model parameters to update we apply the Quadratic Programming Feature Selection~(QPFS) algorithm~\cite{katrutsa2017comprehensive,rodriguez2010qpfs}. The algorithm selects features for linear regression problem. In both considered models we have the linear regression problem in each step. The QPFS algorithm tries to maximize the relevances of features and minimize pairwise dependency between features~\cite{ding2005mrmr}. In our case it allows to find independent parameters which impact the model residuals the most.
+	
+	In the computational experiment we investigate 
+	
+		
 	\section*{Problem Statement}
 
-	We consider the problem of predicting an target variable $y \in \bbY$ given an object $\bx \in \bbR^{n}$. The space~$\bbY = \{0, 1\}$ for binary classification problem and $\bbY = \bbR$ for regression problem.
-	The goal is to build a model $f(\bx | \bw), \bw \in \mathbb{R}^p$ which outcomes a prediction for each object.
+	We consider the problem of building the model $f( \bx | \bw), \bw \in \mathbb{R}^p$, which predicts a target variable $y \in \bbY$ given the object $\bx \in \bbR^{n}$. The space~$\bbY = \{0, 1\}$ for binary classification problem and $\bbY = \bbR$ for regression problem.
 	There are given the design matrix~$\bX = [\bx_1, \dots, \bx_m]^{\T} \in \bbR^{m \times n}$ and the target vector~$\by = [y_1, \dots, y_m]^{\T} \in \bbY^{m}$. 
 	The goal is to find the optimal weight vector $\bw^*$.
-	The weights~$\bw$ are fitted by the minimization of an error function:
+	The weights~$\bw$ are fitted by the minimization of the error function:
 	\begin{equation}
 	\bw^* = \argmin_{\bw \in \bbR^p} S(\bw | \bX, \by, f).
 	\label{eq:error_function}
@@ -199,6 +247,12 @@
 		\bw_k = \bw_{k-1} - \bH^{-1} \nabla S(\bw).
 	\]
 	The Newton method is unstable and computationally hard. In each iteration the Hessian matrix should be inverted. It is impossible for singular $\bH$.
+	
+	The measure of ill-conditioning for the Heassian matrix $\bH$ is the condition number
+	\[
+		\kappa(\bH) = \frac{\lambda_{\text{max}}(\bH)}{\lambda_{\text{min}}(\bH)},
+	\]
+	where $\lambda_{\text{max}}(\bH), \lambda_{\text{min}}(\bH)$ are the maximum and minimum eigenvalues of~$\bH$.
 	
 	This paper suggests the robust Newton algorithm. 
 	Before the gradient step we propose to select the set of model parameters which have the greatest impact on the error function~$S(\bw)$.
@@ -262,14 +316,15 @@
 	\end{equation}
 where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
 	
-	\section*{QPFS}
-	We suggest to find the subset $\cA = \{1, \dots p\}$ of the model parameters which we need to optimize in the current optimization step.
-	To find the optimal subset $\cA$ we suggest to use the QPFS algorithm.
-	The original algorithm selects features for the linear regression problem
-	\[
+	\section*{Quadratic programming feature selection}
+	Consider linear regression problem
+	\begin{equation}
 		 \| \by - \bX \bw\|_2^2 \rightarrow\min_{\bw \in \bbR^{n}}.
-	\]
-	The goal of the QPFS is to select not correlated features which are relevant to target vector.
+		 \label{eq:linear_regression}
+	\end{equation}
+	If there are multicollinearity between columns of the design matrix~$\bX$ the solution of~\eqref{eq:linear_regression} is unstable. The feature selection methods finds the set $\cA \in \{1, \dots, n\}$ of representative~$\bX$ columns. 
+	
+	The goal of the QPFS is to select non-correlated features, which are relevant to the target vector $\by$.
 	To formalise this approach let introduce two functions: Sim and Rel. 
 	The former measures the redundancy between features, the latter contains relevances between each feature and target vector. 
 	We want to minimize the Sim function and maximize the Rel simultaneously.
@@ -284,7 +339,7 @@ where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
   	The matrix $\bQ \in \bbR^{n \times n}$ entries measure the pairwise similarities between features. 
   	The vector $\mathbf{b} \in \bbR^n$ expresses the similarities between each feature and the target vector~$\by$.
   	The normalized vector~$\ba$ shows the importance of each feature. 
-  	This functional penalizes the dependent features by the function Sim and encourages features relevant to the target by the function Rel. 
+  	The functional~\eqref{eq:quadratic_problem} penalizes the dependent features by the function Sim and encourages features relevant to the target by the function Rel. 
   	The parameter $\alpha$ allows to control the trade-off between the Sim and the Rel terms.
   	The authors of the original QPFS paper suggested the way to select $\alpha$ and make Sim and Rel terms impact are equal
   	\[
@@ -298,115 +353,124 @@ where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
   	\]
   	
   	To measure similarity it was proposed to use the absolute value of sample Pearson correlation coefficient or sample mutual information between pairs of features for the Sim function and between features and target vector for the Rel function.
-  	The problem~\ref{eq:quadratic_problem} is convex if the matrix~$\bQ$ is positive semidefinite. In general it is not always true. 
+  	The problem~\eqref{eq:quadratic_problem} is convex if the matrix~$\bQ$ is positive semidefinite. In general it is not always true. 
   	To satisfy this condition we shift the matrix $\bQ$ spectrum and replace the matrix~$\bQ$ by $\bQ - \lambda_{\text{min}} \mathbf{I}$, where $\lambda_{\text{min}} $ is a $\bQ$ minimal eigenvalue.
   	
   	\section*{Proposal}
-  	To make the optimization process of the Newton algorithm is robust and stable we propose to implement the QPFS algorithm to the problems~\eqref{eq:lin_reg_nonlin_reg} and \eqref{eq:lin_reg_log_reg}. 
-  	The QPFS selects the set~$\cA$ of weight updates~$\Delta \bw$ which have the greatest impact to the residuals and pairwise independent. 
   	
-  	If vector $\bz$ is orthogonal to the columns of the matrix~$\bF$ the correlation coefficient and mutual information coefficient are equals zero. It leads to the QPFS vector $\bb = 0$.
-	We show that for the optimal weights~$\bw^*$ for nonlinear regression and logistic regression models $\bF^{\T} \bz$.
-	\begin{itemize}
-	\item nonlinear regression
+  	To make the optimization process of the Newton algorithm is robust and stable we propose to implement the QPFS algorithm to the problems~\eqref{eq:lin_reg_nonlin_reg} and \eqref{eq:lin_reg_log_reg}. 
+  	The QPFS selects the set~$\cA$ of weight updates~$\Delta \bw$ which have the greatest impact to the residuals and pairwise independent and which are needed to optimize in the current optimization step. 
+  	
+  	The sample correlation coefficient and mutual information coefficient are equal to zero for the orthogonal vectors.
+  	We show that in the optimal point $\bw^*$ the vector $\bz$ is orthogonal to the columns of the matrix $\bF$ for the considered problems. It leads to the QPFS vector $\bb = 0$.
+  	
+	First order optimization condition guarantees this property for nonlinear regression problem
 	\[
-		\bF^{\T} \bz = \bJ^{\T} (\mathbf{f} - \by) = - \nabla S(\bw^*) = 0.
+		\bF^{\T} \bz = \bJ^{\T} (\mathbf{f} - \by) = - \nabla S(\bw^*) = 0;
 	\]
-	\item logistic regression
+	and logistic regression problem
 	\[
 		\bF^{\T} \bz = \bX \bR^{-1/2} \bR^{1/2} (\by - \mathbf{f}) = \bX^{\T} (\by - \mathbf{f}) = \nabla S(\bw^*) = 0.
 	\]
-	\end{itemize}
+
 
 	\section*{Step size}
 	
-	The step size of the Newton method could be excessively large. To control the step size of the weight updates we add the parameter $t$ in the update rule~\eqref{eq:update_rule}
+	The step size of the Newton method could be excessively large. To control the step size of the weight updates we add the parameter $\eta$ in the update rule~\eqref{eq:update_rule}
 	\[
-		\bw_k = \bw_{k - 1} + t \Delta \bw_{k - 1}; \quad t \in [0, 1].
+		\bw_k = \bw_{k - 1} + \eta \Delta \bw_{k - 1}; \quad \eta \in [0, 1].
 	\]
-	To select the appropriate the step size $t$ the Armijo rule is used. We choose the $t$ as large as possible to satisfy the following condition
+	To select the appropriate step size $\eta$ the Armijo rule is used. We choose $\eta$ as large as possible to satisfy the following condition
 	\[
-		S(\bw_{k - 1} + t \Delta \bw_{k - 1}) < S(\bw_{k - 1}) + \gamma t \nabla S^{\T}(\bw_{k-1})\bw_{k - 1}; \quad \gamma \in [0, 0.5].
+		S(\bw_{k - 1} + \eta \Delta \bw_{k - 1}) < S(\bw_{k - 1}) + \gamma \eta \nabla S^{\T}(\bw_{k-1})\bw_{k - 1}; \quad \gamma \in [0, 0.5].
 	\]
 	
   	\section*{Experiment}
   	
-  	We want to investigate the dependence of the QPFS solution for the problem. 
+  	We investigate the dependence of the QPFS parameters for the problems~\eqref{eq:lin_reg_nonlin_reg},~\eqref{eq:lin_reg_log_reg}. 
   	Assume that weight vector~$\bw^0$ lies near the optimal weight vector~$\bw^*$. 
   	We consider the line segment
   	\[
   	\bw_{\beta} = \beta \bw^* + (1 - \beta) \bw^0; \, \beta \in [0, 1] .
   	\]
   	
-  	In the experiment we used the Boston House Pricing dataset (objects: 506, features: 13). 
+  	We generate the dataset with 300 samples and 7 features for logistic regression problem. 
+  	The landscape of the error function~\eqref{eq:log_loss} on the two random selected parameters grid is shown in the figure~\ref{fig:log_reg_error}.
+  	The surface is convex with stretched level lines along some model weights.
+  	We add the random noise to the optimum weights $\bw^*$ to get the point $\bw^0$. The behaviour of the Rel term vector $\bb$ on the line segment between $\bw^0$ and $\bw^*$ is illustrated in the figure~\ref{fig:log_reg_b_wrt_beta}.
+  	The components of the vector $\bb$ starts to decrease sharply nearing the optimal point.
 
-  		\begin{figure}[!h]
-  			\centering
-  			\begin{subfigure}{.5\textwidth}
-  				\centering
-  				\includegraphics[width=\linewidth]{figs/log_reg_error}
-  				\caption{Error landscape}
-  				\label{fig:log_reg_error}
-  			\end{subfigure}%
-  			\begin{subfigure}{.5\textwidth}
-  				\centering
-  				\includegraphics[width=\linewidth]{figs/log_reg_b_wrt_beta.eps}
-  				\caption{Feature relevances}
-  				\label{fig:log_reg_b_wrt_beta}
-  			\end{subfigure}
-  			\caption{Logistic regression}
-  			\label{fig:}
-  		\end{figure}
+	\begin{figure}
+		\centering
+		\begin{subfigure}{.5\textwidth}
+			\centering
+			\includegraphics[width=\linewidth]{figs/log_reg_error}
+			\caption{Error landscape}
+			\label{fig:log_reg_error}
+		\end{subfigure}%
+		\begin{subfigure}{.5\textwidth}
+			\centering
+			\includegraphics[width=\linewidth]{figs/log_reg_b_wrt_beta.eps}
+			\caption{Feature relevances}
+			\label{fig:log_reg_b_wrt_beta}
+		\end{subfigure}
+		\caption{Logistic regression}
+	\end{figure}
   	
-  	\begin{figure}[!h]	
+  	For nonlinear regression model we used the classical Boston Housing dataset with 506 objects and 13 features.
+  	The neural network contains 2 hidden neurons for simplicity.
+  	The error function landscape for the neural network model is more complex. 
+  	It is not convex and could contain multiple local minimum.
+  	The two-dimensional error function landscape for this dataset is shown in the figure~\ref{fig:neural_error}. 
+  	The grid is obtained by selecting two random weights from the matrix $\bW_1$.
+  	We use the same strategy to investigate how the linear term vector $\bb$ is changing moving from $\bw^0$ to $\bw^*$. 
+  	The result is shown in the figure~\ref{fig:neural_b_wrt_beta}.
+  	The vector $\bb$ components decline near optimum. Reaching the optimum the different weights influence on the model residuals~$\bz$.
+  
+  \begin{figure}
+  	\centering
+  	\begin{subfigure}{.5\textwidth}
   		\centering
-  		\includegraphics[width=0.6\linewidth]{figs/irls_qpfs_2d.eps}	 
-  		\caption{Optimization process for logistic regression with QPFS+Newton algorithm}
-  		\label{fig:irls_qpfs_2d}
-  	\end{figure}
-  	
-  	\hrulefill
-  
-  We fitted the linear model for this data.
-  The error landscape is shown in the figure~\ref{fig:linear_error} for two randomly selected weights. 
-  We add the random noise to the optimum weights $\bw^*$ to get the point $\bw^0$. The behaviour of the Rel term vector $\bb$ on the line segment between $\bw^0$ and $\bw^*$ is illustrated in the figure~\ref{fig:linear_b_wrt_beta}.
+  		\includegraphics[width=\linewidth]{figs/neural_error.eps}
+  		\caption{Error landscape}
+  		\label{fig:neural_error}
+  	\end{subfigure}%
+  	\begin{subfigure}{.5\textwidth}
+  		\centering
+  		\includegraphics[width=\linewidth]{figs/neural_b_wrt_beta.eps}
+  		\caption{Feature relevances}
+  		\label{fig:neural_b_wrt_beta}
+  	\end{subfigure}
+  	\caption{Neural network, first layer}
+  \end{figure}
 
-	\begin{figure}[!h]	
-		\centering
-		\includegraphics[width=0.8\linewidth]{figs/linear_error.eps}	 
-		\caption{Error function landscape near optimal weight point for linear model.}
-		\label{fig:linear_error}
-	\end{figure}
-
-	\begin{figure}[!h]	
-		\centering
-		\includegraphics[width=\linewidth]{figs/linear_b_wrt_beta.eps}	 
-		\caption{Relevance scores for linear model with respect to $\beta$ coefficient.}
-		\label{fig:linear_b_wrt_beta}
-	\end{figure}
-
-	The landscape for the neural network model is more complex. We use only 2 hidden units to get not excessively complex model.
-	The optimal weight vector $\bw^*$ is obtained by backpropagation optimization procedure. 
-	Figure~\ref{fig:neural_error} shows the error function on the grid of two neural network weights from~$\bW_1$. 
-	We use the same strategy to investigate how the linear term vector $\bb$ is changing moving from $\bw^0$ to $\bw^*$. 
-	The result are shown in the figure~\ref{fig:neural_b_wrt_beta}.
+	Figure~\ref{fig:irls_qpfs_2d} shows the optimization process for the proposed procedure in the case of logistic regression with two model parameters. 
+	Even for two-dimensional problem the solution of Newton method is unstable and the condition number of Hessian matrix $\bH$ is could be extremely large. 
+	In each step of the algorithm the QPFS procedure selects the weigths that should be optimized. In this example the proposed algorithm selects and updates only one weight per iteration in the first steps. It makes the algorithm more robust.
 	
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.6\linewidth]{figs/irls_qpfs_2d.eps}	 
+		\caption{Optimization process for logistic regression with QPFS+Newton algorithm}
+		\label{fig:irls_qpfs_2d}
+	\end{figure}
+
+	Figure~\ref{fig:active_params_wrt_iters} shows the sets of active parameters over iterations for Boston housing dataset and neural network with 2 hidden neurons. The dark cells correspond to the active parameters that we optimize.
 
 	\begin{figure}[!h]	
 		\centering
-		\includegraphics[width=0.8\linewidth]{figs/neural_error.eps}	 
-		\caption{Error function landscape near optimal weight point for neural network.}
-		\label{fig:neural_error}
+		\includegraphics[width=\linewidth]{figs/active_params_wrt_iters.eps}	 
+		\caption{Active parameters sets over optimization process}
+		\label{fig:active_params_wrt_iters}
 	\end{figure}
 	
-	\begin{figure}[!h]	
-		\centering
-		\includegraphics[width=\linewidth]{figs/neural_b_wrt_beta.eps}	 
-		\caption{Relevance scores for neural network with respect to $\beta$ coefficient.}
-		\label{fig:neural_b_wrt_beta}
-	\end{figure}
-				
-   \newpage
-   \hrulefill
+	In the considered examples the condition number~$\kappa (\bH)$ of the original Newton number in some iterations was extremely large. 
+	The selection of the active parameters allowed to reduce the condition number significantly. 
+	
+
+	\section*{Conclusion}
+
   
+  \bibliographystyle{unsrt}
+  \bibliography{papers_qpfs.bib}
 	\end{document}
