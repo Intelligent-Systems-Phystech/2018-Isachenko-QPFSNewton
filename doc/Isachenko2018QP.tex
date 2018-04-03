@@ -1,3 +1,4 @@
+
 % !TEX encoding = UTF-8 Unicode
 \documentclass[a4paper,12pt]{article}
 	
@@ -165,7 +166,7 @@
 	The idea is to select the set of model parameters which have to be optimized in the current step of optimization procedure.
 	We show that in the case of nonlinear regression and logistic regression models the parameters selection could be performed by Quadratic Programming Feature Selection algorithm.
 	It allows to find the set of independent parameters that are responsible for the residuals.
-	We carried out the experiment to show the proposed method {\color{red} TODO}
+	We carried out the experiment to show how the proposed method works and compare it with other methods.
 	
 	\bigskip
 	\textbf{Keywords}: nonlinear regression, logistic regression, Newton method, quadratic programming feature selection
@@ -197,7 +198,7 @@
 	
 	The paper proposes to apply the Quadratic Programming Feature Selection~(QPFS) algorithm~\cite{katrutsa2017comprehensive,rodriguez2010qpfs} to select the optimal set of model parameters. The QPFS algorithm selects features for the linear regression problem. We have the linear regression problem for both model in each step. The QPFS algorithm tries to maximize the relevances of features and minimize pairwise dependency between features~\cite{ding2005mrmr}. In our case it allows to find independent parameters which impact the model residuals the most.
 	
-	In the computational experiment we investigate {\color{red} TODO}
+	In the computational experiment we investigated the behaviour of the proposed algorithm near the optimal point and compared the algorithm with the other methods such as gradient descent, Nesterov Momentum, ADAM and Newton algorithms. 
 	
 		
 	\section*{Problem Statement}
@@ -506,7 +507,79 @@ where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
 	In the considered examples the condition number~$\kappa (\bH)$ of the original Newton number in some iterations was extremely large. 
 	The selection of the active parameters allowed to reduce the condition number significantly. 
 	
+	We compared the proposed algorithm with the existing methods, namely Gradient Descent~(GD), Nesterov Momentum, ADAM and the original Newton algorithm. Experiments were carried out for nonlinear regression problem. The datasets were chosen from the UCI achive repository~\cite{uci2017}. The results are shown in the table~\ref{tbl:nonlin_reg_results}. For each dataset there are two rows which contains mean squared error in the train~(first row) and test~(second row) data. We used 5-fold cross validation to find the average error and its standard deviation. The proposed algorithm shows 
 
+	\begin{table}[]
+		\centering
+		\caption{Results for nonlinear regression problem}
+		\label{tbl:nonlin_reg_results}
+		\begin{tabular}{|l|c|c|c|c|c|}
+			\hline
+			& GD 
+			& Nesterov 
+			& ADAM 
+			& Newton 
+			&
+			\begin{tabular}[c]{@{}c@{}}QPFS+Newton\\ (proposed)\end{tabular} \\ 
+			\hline
+			Boston House
+			& \small{$27.2\pm4.6$}
+			& \small{$46.0\pm11.0$}
+			& \small{$35.4\pm2.5$}               
+			& \small{$22.1\pm15.2$}              
+			& \small{$20.9\pm10.4$}     \\ 
+			\cline{2-6} 
+			Prices
+			& \multicolumn{1}{c|}{\small{$32.4\pm5.6$}}
+			& \multicolumn{1}{c|}{\small{$53.3\pm11.5$}}
+			& \multicolumn{1}{c|}{\small{$37.8\pm7.0$}} 
+			& \multicolumn{1}{c|}{\small{$28.9\pm13.6$}}
+			& \multicolumn{1}{c|}{\small{$\mathbf{24.5\pm9.4}$}}\\ 
+			\hline
+			Communities
+			& \small{$48.0\pm6.4$ }
+			& \small{$31.4\pm2.8$}
+			& \small{$23.3\pm3.7$}               
+			& \small{$18.3\pm3.4$}              
+			&  \small{$26.7\pm3.1$}   \\ 
+			\cline{2-6} 
+			and Crime 
+			& \multicolumn{1}{c|}{\small{$47,5\pm6.5$}}
+			& \multicolumn{1}{c|}{\small{$32.9\pm4.3$}}
+			& \multicolumn{1}{c|}{\small{$28,1\pm4.5$}} 
+			& \multicolumn{1}{c|}{\small{$28.8\pm3.6$}}
+			& \multicolumn{1}{c|}{\small{$\mathbf{28.4\pm3.0}$}} \\ 
+			\hline
+			Forest
+			& \small{$18.9\pm0.4$}
+			& \small{$1.83\pm0.4$}
+			& \small{$1.81\pm0.6$}               
+			& \small{$17.7\pm0.4$}              
+			& \small{$17.9\pm0.4$}   \\ 
+			\cline{2-6} 
+			Fires
+			& \multicolumn{1}{c|}{\small{$\mathbf{20.0\pm2.1}$}}
+			& \multicolumn{1}{c|}{\small{$20.2\pm2.2$}}
+			& \multicolumn{1}{c|}{\small{$\mathbf{20.0\pm2.0}$}} 
+			& \multicolumn{1}{c|}{\small{$20.6\pm1.4$}}
+			& \multicolumn{1}{c|}{\small{$20.2\pm2.2$}} \\ 
+			\hline
+			Residential
+			& \small{$51.6\pm17.7$}
+			& \small{$32.6\pm19.5$}
+			& \small{$30.0\pm24.8$}               
+			& \small{$35.5\pm24.7$}              
+			&  \small{$30.3\pm10.7$}  \\ 
+			\cline{2-6}
+			Building 
+			& \multicolumn{1}{c|}{\small{$53.7\pm13.9$}}
+			& \multicolumn{1}{c|}{\small{$34.1\pm13.6$}}
+			& \multicolumn{1}{c|}{\small{$34.1\pm19.4$}} 
+			& \multicolumn{1}{c|}{\small{$35.0\pm15.6$}}
+			& \multicolumn{1}{c|}{\small{$\mathbf{30.9\pm5.3}$}} \\ 
+			\hline
+		\end{tabular}
+	\end{table}
 	\section*{Conclusion}
 
   

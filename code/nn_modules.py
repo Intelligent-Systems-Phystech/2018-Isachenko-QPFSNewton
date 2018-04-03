@@ -182,6 +182,25 @@ class ReLU(Module):
         return "ReLU"
     
     
+class Sigmoid(Module):
+    def __init__(self):
+         super(Sigmoid, self).__init__()
+    
+    def updateOutput(self, input):
+        self.output = np.zeros_like(input)
+        self.output[input >= 0] = 1. / (1 + np.exp(-input[input >= 0]))
+        self.output[input < 0] = np.exp(input[input < 0]) / (np.exp(input[input < 0]) + 1.)
+        return self.output
+
+    def updateGradInput(self, input, gradOutput):
+        grad = np.exp(-input * np.sign(input)) / (1. + 2 * np.exp(-input * np.sign(input)) + np.exp(-2 * input * np.sign(input)))
+        self.gradInput = np.multiply(gradOutput , grad.ravel())[:, np.newaxis]
+        return self.gradInput
+    
+    def __repr__(self):
+        return "Sigmoid"
+    
+    
 class LeakyReLU(Module):
     def __init__(self, slope = 0.03):
         super(LeakyReLU, self).__init__()
