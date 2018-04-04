@@ -168,29 +168,34 @@
 	It allows to find the set of independent parameters that are responsible for the residuals.
 	We carried out the experiment to show how the proposed method works and compare it with other methods.
 	
+	The paper proposes the robust second-order optimization algorithm.
+	The algorithm based on the iterative Newton method, which is unstable procedure.
+	The authors suggest to select the set of active parameters in each optimization step.    The algorithm updates only parameters from this active set. 
+	Quadratic programming feature selection is used to find the active set. It maximizes the relevance of model parameters to the residuals and minimizes the redundancy. Nonlinear regression and logistic regression models are investigated. 
+	The proposed algorithm achieves the less error with comparison to the other methods.
+	
 	\bigskip
 	\textbf{Keywords}: nonlinear regression, logistic regression, Newton method, quadratic programming feature selection
 	
 	\section*{Introduction}
-	The modern machine learning models have extremely large number of parameters. 
-	The error function for such models have ф complex landscape with multiple local minima. 
-	The optimization procedure in this case brings to different solutions each time.
+	The error function models have a complex landscape with multiple local minima for models with extremely large number of parameters. 
+	In this case the optimization algorithm brings to different solutions each time.
 	
-	The optimization procedure is an iterative process. 
+	The optimization algorithm is an iterative process. 
 	In each step it updates the current point parameters to get the next approximation.
-	There have been developed a lot of first-order optimization algorithms, which use the first derivatives of the error function. 
-	The most famous algorithms are SGD, Nesterov momentum~\cite{nesterov1983momentum}, Adagrad~\cite{duchi2011adagrad}, Adam~\cite{kingma2014adam}. 
-	These algorithms are widely used for deep neural networks optimization~\cite{goodfellow2016deeplearningbook}. 
-	The Newton algorithm is the second-order algorithm which use the second derivatives of the error function. 
-	It finds more reasonable updates and converges with much less number of iterations.
-	The drawback of the second-order optimization methods huge and ill-conditioned Hessian matrix. 
-	The optimization in this case could be computationally expensive and could diverge. 
-	To overcome this problem the approximations for the Hessian matrix and regularization are applied~\cite{avriel2003nonlinear,blaschke1997convergence}.
-	The paper~\cite{botev2017newtondeeplearning} implements the Newton method to the deep neural networks.
+	There have been developed first-order optimization algorithms, which use the first derivatives of the error function. 
+	The most famous algorithms are Gradient Descent, Nesterov Momentum~\cite{nesterov1983momentum}, Adagrad~\cite{duchi2011adagrad}, Adam~\cite{kingma2014adam}. 
+	These algorithms are used for the deep neural networks optimization~\cite{goodfellow2016deeplearningbook}. 
+	The Newton algorithm is the second-order algorithm, which uses the second derivatives of the error function. 
+	It finds updates for the quadratic approximation of the error function and converges with the lesser number of iterations.
+	The drawback of the second-order optimization methods is the huge and ill-conditioned Hessian matrix. 
+	The optimization process in this case is computationally expensive and diverge. 
+	\cite{avriel2003nonlinear,blaschke1997convergence}~propose the approximations for the Hessian matrix and regularization to overcome this problem .
+	The paper~\cite{botev2017newtondeeplearning} applies the Newton method to the deep neural networks.
 	
-	This paper suggests to select the set of model parameters which we optimize in each optimization step.
-	We consider nonlinear regression model with squared error function and logistic regression model with cross-entropy error function.
-	For nonlinear regression the Newton method and model linearization leads to the Gauss-Newton method. 
+	This paper suggests to select the set of model parameters, which is optimized in each optimization step.
+	The authors investigate the nonlinear regression model with the squared error function and the logistic regression model with the cross-entropy error function.
+	For the nonlinear regression the Newton method and model linearization leads to the Gauss-Newton method. 
 	Each step solves the linear regression problem. 
 	The authors use the two-layer neural network as the nonlinear model. 
 	The Newton method for logistic regression brings to Iteratively Least Squares~(IRLS) algorithm. 
@@ -198,12 +203,12 @@
 	
 	The paper proposes to apply the Quadratic Programming Feature Selection~(QPFS) algorithm~\cite{katrutsa2017comprehensive,rodriguez2010qpfs} to select the optimal set of model parameters. The QPFS algorithm selects features for the linear regression problem. We have the linear regression problem for both model in each step. The QPFS algorithm tries to maximize the relevances of features and minimize pairwise dependency between features~\cite{ding2005mrmr}. In our case it allows to find independent parameters which impact the model residuals the most.
 	
-	In the computational experiment we investigated the behaviour of the proposed algorithm near the optimal point and compared the algorithm with the other methods such as gradient descent, Nesterov Momentum, ADAM and Newton algorithms. 
+	The computational experiment investigates a behaviour of the proposed algorithm near the optimal point and compared the algorithm with the other methods such as Gradient Descent, Nesterov Momentum, ADAM and Newton algorithms. 
 	
 		
 	\section*{Problem Statement}
 
-	The model $f( \bx | \bw), \bw \in \mathbb{R}^p$ predicts the target variable $y \in \bbY$, given the object $\bx \in \bbR^{n}$. The space $\bbY$ equals $\{0, 1\}$ for binary classification problem and $\bbY = \bbR$ for regression problem.
+	The model $f( \bx, \bw), \bw \in \mathbb{R}^p$ predicts the target variable $y \in \bbY$, given the object $\bx \in \bbR^{n}$. The space $\bbY$ equals $\{0, 1\}$ for the binary classification problem and $\bbY = \bbR$ for the regression problem.
 	There are given the design matrix~$\bX = [\bx_1, \dots, \bx_m]^{\T} \in \bbR^{m \times n}$ and the target vector~$\by = [y_1, \dots, y_m]^{\T} \in \bbY^{m}$. 
 	The goal is to find the optimal parameters~$\bw^*$.
 	The parameters~$\bw$ are fitted by the minimization of the error function:
@@ -212,18 +217,17 @@
 		\label{eq:error_function}
 	\end{equation}
 	The investigated choices for the error function~$S(\bw | \bX, \by, f)$ are
-	squared error for the regression problem: 
+	the squared error for the regression problem: 
 		\begin{equation}
-			S(\bw | \bX, \by, f) = \frac 12 \| \by - \mathbf{f}(\bX | \bw) \|_2^2 = \frac 12 \sum_{i=1}^m \| y_i - f(\bx_i | \bw)\|^2,
+			S(\bw | \bX, \by, f) = \frac 12 \| \by - \mathbf{f}(\bX, \bw) \|_2^2 = \frac 12 \sum_{i=1}^m \bigl( y_i - f(\bx_i,  \bw)\bigr)^2,
 			\label{eq:squared_error}
 		\end{equation}
-	 and cross-entropy for the binary classification problem: 
+	 and the cross-entropy for the binary classification problem: 
 		\begin{equation}
-			S(\bw | \bX, \by, f) = \sum_{i=1}^m \bigl[y_i \log f (\bx_i | \bw) + (1-y_i) \log (1 - f (\bx_i | \bw))\bigr].
+			S(\bw | \bX, \by, f) = \sum_{i=1}^m \bigl[y_i \log f (\bx_i , \bw) + (1-y_i) \log \bigl(1 - f (\bx_i , \bw)\bigr)\bigr].
 			\label{eq:log_loss}
 		\end{equation}
 	
-	The number of model parameters~$p$ could be extremely huge. 
 	The problem~\eqref{eq:error_function} is solved by iterative optimization procedures. 
 	To obtain parameters in the step~$k$, the current parameters $\bw^{k-1}$ is updated by the rule
 	\begin{equation}
@@ -231,12 +235,27 @@
 		\label{eq:update_rule}
 	\end{equation}
 	This paper suggests to use the Newton optimization procedure to select parameters updates~$\Delta \bw$.
-
+	
+	The Newton method is unstable and computationally hard. Each iteration inverts the Hessian matrix $\bH = \nabla^2 S(\bw)$.
+	This paper suggests the robust Newton algorithm. 
+	Before the gradient step the authors propose to select the set of active model parameters, which have the greatest impact on the error function~$S(\bw)$.
+	We update only the parameters with indices from a set $\cA \subseteq \{ 1, \dots, p \}$
+	\begin{align*}
+	\bw_{\cA}^k &= \bw_{\cA}^{k - 1} + \Delta \bw_{\cA}^{k - 1}, \quad \bw_{\cA} = \{w_j\}_{j \in \cA}; \\
+	\bw_{\bar{\cA}}^k &= \bw_{\bar{\cA}}^{k - 1}, \quad \bw_{\bar{\cA}} = \{w_j\}_{j \notin \cA}.
+	\end{align*}
+	To select the set $\cA$ from all possible $2^p$ subsets we introduce the quality criteria 
+	\begin{equation}
+		\cA = \argmin_{\cA' \subseteq \{1, \dots, p\}} Q(\cA' | \bX, \by, f, \bw).
+		\label{eq:subset_selection}
+	\end{equation}
+	The problem~\eqref{eq:subset_selection} is solved in each step $k$ of the optimization process for the current parameters~$\bw^k$.
+	
 	\section*{Newton method}
 	
 	The Newton method uses the first order optimization condition for problem~\eqref{eq:error_function} and linearize the gradient of $S(\bw)$
 	\[
-		\nabla S (\bw + \Delta \bw) = \nabla S(\bw) + \bH \cdot \Delta \bw,
+		\nabla S (\bw + \Delta \bw) = \nabla S(\bw) + \bH \cdot \Delta \bw = 0,
 	\]
 	\[
 		\Delta \bw = - \bH^{-1} \nabla S(\bw).
@@ -247,38 +266,35 @@
 	\[
 		\bw^k = \bw^{k-1} - \bH^{-1} \nabla S(\bw).
 	\]
-	The Newton method is unstable and computationally hard. Each iteration inverts the Hessian matrix.
+	Each iteration inverts the Hessian matrix.
 	The measure of ill-conditioning for the Heassian matrix $\bH$ is the condition number
 	\[
 		\kappa(\bH) = \frac{\lambda_{\text{max}}(\bH)}{\lambda_{\text{min}}(\bH)},
 	\]
-	where $\lambda_{\text{max}}(\bH), \lambda_{\text{min}}(\bH)$ are the maximum and minimum eigenvalues of~$\bH$.
-	
-	This paper suggests the robust Newton algorithm. 
-	Before the gradient step we propose to select the set of model parameters, which have the greatest impact on the error function~$S(\bw)$.
-	It reduces the size of the Hessian matrix $\bH$ and makes the condition number $\kappa(\bH)$ smaller.
-	The proposed algorithm is implemented to the nonlinear regression problem and binary classification problem.
+	where $\lambda_{\text{max}}(\bH), \lambda_{\text{min}}(\bH)$ are the maximum and minimum eigenvalues of~$\bH$. The large condition number~$\kappa(\bH)$ leads to instability of the optimization process.
+	The proposed algorithm reduces the size of the Hessian matrix $\bH$ and makes the condition number $\kappa(\bH)$ smaller.
+	The algorithm is implemented to the nonlinear regression problem and the binary classification problem.
 	
 	\section*{Nonlinear regression}
-	Assume that the model $f(\bx | \bw)$ is close to linear in the neighborhood of the point $\bw + \Delta \bw$
+	Assume that the model $f(\bx , \bw)$ is close to linear in the neighborhood of the point $\bw + \Delta \bw$
 	\[
-	\mathbf{f}(\bX | \bw + \Delta \bw) \approx \mathbf{f}(\bX | \bw) + \bJ \cdot \Delta  \bw,
+	\mathbf{f}(\bX , \bw + \Delta \bw) \approx \mathbf{f}(\bX , \bw) + \bJ \cdot \Delta  \bw,
 	\]
 	
 	where $\mathbf{J} \in \bbR^{m \times p}$ is the Jacobian matrix
 	\begin{equation}
 		\bJ = 
 		\begin{pmatrix}
-		\frac{\partial f(\bx_1 | \bw)}{\partial w_1} & \dots & 
-		\frac{\partial f(\bx_1 | \bw)}{\partial w_p} \\
+		\frac{\partial f(\bx_1 , \bw)}{\partial w_1} & \dots & 
+		\frac{\partial f(\bx_1 , \bw)}{\partial w_p} \\
 		\dots & \dots & \dots \\
-		\frac{\partial f(\bx_m | \bw)}{\partial w_1} & \dots & 
-		\frac{\partial f(\bx_m | \bw)}{\partial w_p}
+		\frac{\partial f(\bx_m , \bw)}{\partial w_1} & \dots & 
+		\frac{\partial f(\bx_m , \bw)}{\partial w_p}
 		\end{pmatrix}.
 	\end{equation}
 	Under this assumption the gradient $\nabla S(\bw)$ and the Hessian matrix $\bH$ of the error function~\eqref{eq:squared_error} equal
 	\begin{equation}
-		\nabla S(\bw) = \bJ^{\T} (\by - \mathbf{f}); \quad \bH = \bJ^{\T} \bJ.
+		\nabla S(\bw) = \bJ^{\T} (\by - \mathbf{f}), \quad \bH = \bJ^{\T} \bJ.
 		\label{eq:nonlin_reg_deriv}
 	\end{equation}
 	It leads to the Gauss-Newton method and the update rule~\eqref{eq:update_rule} is 
@@ -292,21 +308,21 @@
 	\end{equation}
 	where $\bz = \mathbf{f} - \by$ and $\bF = \bJ$.
 	
-	We consider the feed-forward two layer neural network as the nonlinear model. In this case the model~$f(\bx | \bw)$ is given by
+	We consider the feed-forward two layer neural network as the nonlinear model. In this case the model~$f(\bx, \bw)$ is given by
 	\[
-	f(\bx | \bw) = \sigma(\bx^{\T} \bW_1) \bw_2.
+	f(\bx, \bw) = \sigma(\bx^{\T} \bW_1) \bw_2.
 	\]
-	Here~$\bW_1 \in \bbR^{n \times h}$ the weight matrix which connects the input features with $h$ hidden units, $\sigma(\cdot)$ is a nonlinearity function which applied element-wise, and $\bw_2 \in \bbR^{h \times 1}$ the weight matrix which connects the hidden units with output. 
-	The model weight vector~$\bw$ is a concatenation of vectorized matrices~$\bW_1$, $\bw_2$.
+	Here~$\bW_1 \in \bbR^{n \times h}$ is the weight matrix which connects the input features with $h$ hidden units. The nonlinearity function $\sigma(\cdot)$ applied element-wise. The weights $\bw_2 \in \bbR^{h \times 1}$ connect the hidden units with the output. 
+	The model parameters~$\bw$ is a concatenation of vectorized matrices~$\bW_1$, $\bw_2$.
 	
 	\section*{Logistic Regression}
-	For logistic regression problem the model $f(\bx | \bw) = \sigma(\bx^{\T} \bw)$, where $\sigma$ is a sigmoid function.
+	For logistic regression the model $f(\bx , \bw) = \sigma(\bx^{\T} \bw)$ with the sigmoid function~$\sigma(\cdot)$.
 	The gradient and the Hessian of the error function~\eqref{eq:log_loss} equal
 	\begin{equation}
-		\nabla S(\bw) = \bX^{\T} (\mathbf{f} - \by); \quad \bH = \bX^{\T} \bR \bX,
+		\nabla S(\bw) = \bX^{\T} (\mathbf{f} - \by), \quad \bH = \bX^{\T} \bR \bX,
 		\label{eq:log_reg_deriv}
 	\end{equation}
-	where $\bR$ is a diagonal matrix with $f(\bx_i | \bw) \cdot (1 - f(\bx_i | \bw))$ diagonal entries.
+	where $\bR$ is a diagonal matrix with $f(\bx_i , \bw) \cdot (1 - f(\bx_i , \bw))$ diagonal entries.
 	
 	The update rule~\eqref{eq:update_rule} is
 	\[
@@ -320,19 +336,19 @@
 where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
 	
 	\section*{Quadratic programming feature selection}
-	Consider linear regression problem
+	If there are multicollinearity between columns of the design matrix~$\bX$ the solution of the linear regression problem
 	\begin{equation}
-		 \| \by - \bX \bw\|_2^2 \rightarrow\min_{\bw \in \bbR^{n}}.
-		 \label{eq:linear_regression}
+	\| \by - \bX \bw\|_2^2 \rightarrow\min_{\bw \in \bbR^{n}}.
+	\label{eq:linear_regression}
 	\end{equation}
-	If there are multicollinearity between columns of the design matrix~$\bX$ the solution of~\eqref{eq:linear_regression} is unstable. The feature selection methods finds the set $\cA \in \{1, \dots, n\}$ of representative~$\bX$ columns. 
+	is unstable. The feature selection methods finds the set $\cA \in \{1, \dots, n\}$ of representative columns in~$\bX$. 
 	
 	The goal of the QPFS is to select non-correlated features, which are relevant to the target vector $\by$.
 	To formalise this approach let introduce two functions: Sim and Rel. 
-	The former measures the redundancy between features, the latter contains relevances between each feature and target vector. 
+	The Sim measures the redundancy between features, the Rel contains relevances between each feature and target vector. 
 	We want to minimize the Sim function and maximize the Rel simultaneously.
 	
-	The QPFS method offers the explicit way to construct the functions Sim and Rel. 
+	QPFS offers the explicit way to construct the functions Sim and Rel. 
 	The method minimizes the following functional
 	\begin{equation}
 		\underbrace{\ba^{\T} \bQ \ba}_{\text{Sim}} - \alpha \cdot \underbrace{\vphantom{()} \mathbf{b}^{\T} \ba}_{\text{Rel}} \rightarrow \min_{\substack{\ba \geq 0 \\ \|\ba\|_1=1}}.
@@ -349,29 +365,26 @@ where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
   		\alpha = \frac{\overline{\bQ}}{\overline{\bQ} + \overline{\bb}},
   	\end{equation*}
   	where $\overline{\bQ}$, $\overline{\bb}$ are the mean values of $\bQ$ and $\bb$ correspondingly.
-  	
-  	Apply the thresholding for $\ba$ to find the optimal feature subset :
+  	Apply the thresholding for $\ba$ to find the optimal feature subset:
   	\[
   		j \in \mathcal{A} \Leftrightarrow a_j > \tau.
   	\]
   	
-  	To measure similarity the authors use sample mutual information coefficient between pairs of features for the Sim function and between features and target vector for the Rel function.
+  	To measure similarity the authors use sample correlation coefficient between pairs of features for the Sim function and between features and target vector for the Rel function.
   	The problem~\eqref{eq:quadratic_problem} is convex if the matrix~$\bQ$ is positive semidefinite. In general it is not always true. 
   	To satisfy this condition we shift the matrix $\bQ$ spectrum and replace the matrix~$\bQ$ by $\bQ - \lambda_{\text{min}} \mathbf{I}$, where $\lambda_{\text{min}} $ is a $\bQ$ minimal eigenvalue.
   	
-  	\section*{Proposal}
+  	To make the optimization process of the Newton algorithm robust and stable we propose to implement the QPFS algorithm to the problems~\eqref{eq:lin_reg_nonlin_reg} and \eqref{eq:lin_reg_log_reg}. 
+  	QPFS selects the set~$\cA$ of parameters updates~$\Delta \bw$, which have the greatest impact to the residuals and pairwise independent.
+  	The functional~\eqref{eq:quadratic_problem} corresponds to the quality criteria~$Q(\cA | \bX, \by, f, \bw)$.
+	\begin{equation}
+		\cA = \argmin_{\cA' \subseteq \{1, \dots, p\}} Q(\cA' | \bX, \by, f, \bw) = \argmin_{\ba \geq 0, \, \|\ba\|_1=1} \bigl[\ba^{\T} \bQ \ba - \alpha \cdot \mathbf{b}^{\T} \ba \bigr].
+	\end{equation}
   	
-  	To make the optimization process of the Newton algorithm is robust and stable we propose to implement the QPFS algorithm to the problems~\eqref{eq:lin_reg_nonlin_reg} and \eqref{eq:lin_reg_log_reg}. 
-  	The QPFS selects the set~$\cA$ of weight updates~$\Delta \bw$, which have the greatest impact to the residuals and pairwise independent and which are needed to optimize in the current optimization step. 
-  	We update only the weights with indices from the set $\cA$
-  	\[
-  		\bw_{\cA}^k = \bw_{\cA}^{k - 1} + \Delta \bw_{\cA}^{k - 1}, \quad \bw_{\cA} = \{w_j\}_{j \in \cA}.
-  	\]
-  	
-  	The sample correlation coefficient and mutual information coefficient are equal to zero for the orthogonal vectors.
-  	We show that in the optimal point $\bw^*$ the vector $\bz$ is orthogonal to the columns of the matrix $\bF$ for the considered problems. It leads to the QPFS vector $\bb = \boldsymbol{0}$.
-  	
-	First order optimization condition guarantees this property for the nonlinear regression problem
+  	The sample correlation coefficient is equal to zero for the orthogonal vectors.
+  	We show that in the optimal point $\bw^*$ the vector $\bz$ is orthogonal to the columns of the matrix $\bF$ for the considered problems. 
+  	It leads to the QPFS vector $\bb = \boldsymbol{0}$.
+  	First order optimization condition guarantees this property for the nonlinear regression problem
 	\[
 		\bF^{\T} \bz = \bJ^{\T} (\mathbf{f} - \by) = - \nabla S(\bw^*) = \boldsymbol{0},
 	\]
@@ -392,10 +405,44 @@ where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
 	\]
 	
   	\section*{Experiment}
-  	The goal of the computational experiment is {\color{red} TODO}
+  	The goal of the computational experiment is to explore properties of the proposed algorithm and compare it with the other methods. The pseudocode of the algorithm is given in the algorithm~\eqref{pc:QPFSNewton}.
+  	
+  	
+  	\begin{algorithm}
+  		\caption{QPFS + Newton algorithm}
+  		\label{pc:QPFSNewton}
+  		\begin{algorithmic}
+  			\REQUIRE $\varepsilon$~-- tolerance;\\
+  			\hspace{1.53cm}$\tau$~-- QPFS solution threshold;\\
+  			\hspace{1.53cm}$\gamma$~-- Armijo rule parameter.
+  			\ENSURE $\bw^*$;
+  			\STATE  initialize $\bw^0$;
+  			\STATE $k := 1$;
+  			\REPEAT
+  			\STATE compute $\bz$ and $\bF$ for~\eqref{eq:lin_reg_nonlin_reg} or~\eqref{eq:lin_reg_log_reg} ;
+  			\vspace{0.1cm}
+  			\STATE $\bQ := \text{Sim} (\bF)$, $\bb := \text{Rel}(\bF, \bz)$, $\alpha = \frac{\overline{\bQ}}{\overline{\bQ} + \overline{\bb}}$;
+  			\vspace{0.1cm}
+  			\STATE $\ba := \argmin_{\ba \geq 0, \, \|\ba\|_1=1}\ba^{\T} \bQ \ba - \alpha \cdot \mathbf{b}^{\T} \ba$;
+  			\vspace{0.1cm}
+  			\STATE $\cA = \{j \mid a_j > \tau\}$;
+  			\vspace{0.1cm}
+  			\STATE compute $\nabla S(\bw_{k-1})$, $\bH$ from \eqref{eq:nonlin_reg_deriv} or \eqref{eq:log_reg_deriv};
+  			\vspace{0.1cm}
+  			\STATE $\Delta \bw^{k-1} = - \bH^{-1} \nabla S(\bw^{k-1})$;
+  			\vspace{0.1cm}
+  			\STATE $\eta := \text{ArmijoRule}(\bw_{k-1}, \gamma)$;
+  			\vspace{0.1cm}
+  			\STATE $\bw_{\cA}^k = \bw_{\cA}^{k - 1} + \eta \Delta \bw_{\cA}^{k - 1}$;
+  			\vspace{0.1cm}
+  			\STATE $k := k + 1$;
+  			\vspace{0.1cm}
+  			\UNTIL{$\frac{\| \bw^k - \bw^{k-1} \|}{\| \bw^k \|} < \varepsilon$}
+  		\end{algorithmic}
+  	\end{algorithm}
   	
   	We investigate the dependence of the QPFS parameters for the problems~\eqref{eq:lin_reg_nonlin_reg},~\eqref{eq:lin_reg_log_reg}. 
-  	Assume that weight vector~$\bw^0$ lies near the optimal weight vector~$\bw^*$. 
+  	Assume that the parameter vector~$\bw^0$ lies near the optimal parameters vector~$\bw^*$. 
   	We consider the line segment
   	\[
   	\bw_{\beta} = \beta \bw^* + (1 - \beta) \bw^0; \, \beta \in [0, 1] .
@@ -403,16 +450,15 @@ where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
   	
   	We generate the dataset with 300 samples and 7 features for the logistic regression problem. 
   	The landscape of the error function~\eqref{eq:log_loss} on the two random selected parameters grid is shown in the figure~\ref{fig:log_reg_error}.
-  	The surface is convex with stretched level lines along some model weights.
-  	We add the random noise to the optimum weights $\bw^*$ to get the point $\bw^0$. The behaviour of the Rel term vector $\bb$ on the line segment between $\bw^0$ and $\bw^*$ is illustrated in the figure~\ref{fig:log_reg_b_wrt_beta}.
-  	The components of the vector $\bb$ starts to decrease sharply nearing the optimal point.
-
-	\begin{figure}
+  	The surface is convex with stretched level lines along some model parameters.
+  	Add the random noise to the optimum parameters~$\bw^*$ to get the point~$\bw^0$. The behaviour of the Rel term vector~$\bb$ on the line segment between~$\bw^0$ and~$\bw^*$ is illustrated in the figure~\ref{fig:log_reg_b_wrt_beta}.
+  	The components of the vector~$\bb$ starts to decrease sharply nearing the optimal point.
+	\begin{figure}[!h]
 		\centering
 		\begin{subfigure}{.5\textwidth}
 			\centering
 			\includegraphics[width=\linewidth]{figs/log_reg_error}
-			\caption{Error landscape}
+			\caption{Error function landscape}
 			\label{fig:log_reg_error}
 		\end{subfigure}%
 		\begin{subfigure}{.5\textwidth}
@@ -429,17 +475,17 @@ where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
   	The error function landscape for the neural network model is more complex. 
   	It is not convex and could contain multiple local minimum.
   	The two-dimensional error function landscape for this dataset is shown in the figure~\ref{fig:neural_error}. 
-  	The grid is obtained by selecting two random weights from the matrix $\bW_1$.
-  	We use the same strategy to investigate how the linear term vector $\bb$ is changing moving from $\bw^0$ to $\bw^*$. 
+  	The grid is obtained by selecting two random weights from the matrix~$\bW_1$.
+  	We use the same strategy to investigate how the linear term vector~$\bb$ is changing moving from~$\bw^0$ to~$\bw^*$. 
   	The result is shown in the figure~\ref{fig:neural_b_wrt_beta}.
   	The vector $\bb$ components decline near optimum. Reaching the optimum the different weights influence on the model residuals~$\bz$.
   
-  \begin{figure}
+  \begin{figure}[!h]
   	\centering
   	\begin{subfigure}{.5\textwidth}
   		\centering
   		\includegraphics[width=\linewidth]{figs/neural_error.eps}
-  		\caption{Error landscape}
+  		\caption{Error function landscape}
   		\label{fig:neural_error}
   	\end{subfigure}%
   	\begin{subfigure}{.5\textwidth}
@@ -451,44 +497,11 @@ where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
   	\caption{Neural network, first layer}
   \end{figure}
 
-	\begin{algorithm}[h]
-		\caption{QPFS + Newton algorithm}
-		\label{QPFSNewton}
-		\begin{algorithmic}
-			\REQUIRE $\varepsilon$~-- tolerance;\\
-			\hspace{1.53cm}$\tau$~-- QPFS solution threshold;\\
-			\hspace{1.53cm}$\gamma$~-- Armijo rule parameter.
-			\ENSURE $\bw^*$;
-			\STATE  initialize $\bw^0$;
-			\STATE $k := 1$;
-			\REPEAT
-			\STATE compute $\bz$ and $\bF$ for~\eqref{eq:lin_reg_nonlin_reg} or~\eqref{eq:lin_reg_log_reg} ;
-			\vspace{0.1cm}
-			\STATE $\bQ := \text{Sim} (\bF)$, $\bb := \text{Rel}(\bF, \bz)$, $\alpha = \frac{\overline{\bQ}}{\overline{\bQ} + \overline{\bb}}$;
-			\vspace{0.1cm}
-			\STATE $\ba := \argmin_{\ba \geq 0, \, \|\ba\|_1=1}\ba^{\T} \bQ \ba - \alpha \cdot \mathbf{b}^{\T} \ba$;
-			\vspace{0.1cm}
-			\STATE $\cA = \{j \mid a_j > \tau\}$;
-			\vspace{0.1cm}
-			\STATE compute $\nabla S(\bw_{k-1})$, $\bH$ from \eqref{eq:nonlin_reg_deriv} or \eqref{eq:log_reg_deriv};
-			\vspace{0.1cm}
-			\STATE $\Delta \bw^{k-1} = - \bH^{-1} \nabla S(\bw^{k-1})$;
-			\vspace{0.1cm}
-			\STATE $\eta := \text{ArmijoRule}(\bw_{k-1}, \gamma)$;
-			\vspace{0.1cm}
-			\STATE $\bw_{\cA}^k = \bw_{\cA}^{k - 1} + \eta \Delta \bw_{\cA}^{k - 1}$;
-			\vspace{0.1cm}
-			\STATE $k := k + 1$;
-			\vspace{0.1cm}
-			\UNTIL{$\frac{\| \bw^k - \bw^{k-1} \|}{\| \bw^k \|} < \varepsilon$}
-		\end{algorithmic}
-	\end{algorithm}
-
 	Figure~\ref{fig:irls_qpfs_2d} shows the optimization process for the proposed procedure in the case of logistic regression with two model parameters. 
-	Even for two-dimensional problem the solution of Newton method is unstable and the condition number of Hessian matrix $\bH$ is could be extremely large. 
-	In each step of the algorithm the QPFS procedure selects the weigths that should be optimized. In this example the proposed algorithm selects and updates only one weight per iteration in the first steps. It makes the algorithm more robust.
+	Even for two-dimensional problem the solution of Newton method is unstable and the condition number of Hessian matrix~$\bH$ is could be extremely large. 
+	In each step of the algorithm the QPFS procedure selects the parameters that should be optimized. In this example the proposed algorithm selects and updates only one parameter per iteration in the first steps. It makes the algorithm more robust.
 	
-	\begin{figure}
+	\begin{figure}[!h]
 		\centering
 		\includegraphics[width=0.6\linewidth]{figs/irls_qpfs_2d.eps}	 
 		\caption{Optimization process for logistic regression with QPFS+Newton algorithm}
@@ -497,7 +510,7 @@ where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
 
 	Figure~\ref{fig:active_params_wrt_iters} shows the sets of active parameters over iterations for Boston housing dataset and neural network with two 2 hidden neurons. The dark cells correspond to the active parameters that we optimize.
 
-	\begin{figure}[!h]	
+	\begin{figure}[!h]
 		\centering
 		\includegraphics[width=\linewidth]{figs/active_params_wrt_iters.eps}	 
 		\caption{Active parameters sets over optimization process}
@@ -507,14 +520,23 @@ where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
 	In the considered examples the condition number~$\kappa (\bH)$ of the original Newton number in some iterations was extremely large. 
 	The selection of the active parameters allowed to reduce the condition number significantly. 
 	
-	We compared the proposed algorithm with the existing methods, namely Gradient Descent~(GD), Nesterov Momentum, ADAM and the original Newton algorithm. Experiments were carried out for nonlinear regression problem. The datasets were chosen from the UCI achive repository~\cite{uci2017}. The results are shown in the table~\ref{tbl:nonlin_reg_results}. For each dataset there are two rows which contains mean squared error in the train~(first row) and test~(second row) data. We used 5-fold cross validation to find the average error and its standard deviation. The proposed algorithm shows 
-
-	\begin{table}[]
-		\centering
-		\caption{Results for nonlinear regression problem}
+	We compared the proposed algorithm with the existing methods, namely Gradient Descent~(GD), Nesterov Momentum, ADAM and the original Newton algorithm. 
+	Experiments were carried out for nonlinear regression problem. 
+	The datasets were chosen from the UCI achive repository~\cite{uci2017}. 
+	The results are shown in the table~\ref{tbl:nonlin_reg_results}. 
+	For each dataset there are two rows which contains mean squared error for the train~(first row) and test~(second row) data. 
+	We used 5-fold cross validation to find the average error and its standard deviation. 
+	The proposed algorithm shows the least error among three of four datasets. 
+	The generalization of the proposed algorithm is better than the generalization of the Newton method. 
+	It shows the difference between training and test error.
+	\begin{table}[!h]
+		\footnotesize{
+		\caption{Train and test mean squared errors for all datasets and algorithms}
 		\label{tbl:nonlin_reg_results}
-		\begin{tabular}{|l|c|c|c|c|c|}
+		\centering
+		\begin{tabular}{|l|c|c|c|c|c|c|}
 			\hline
+			Datasets & \begin{tabular}[c]{@{}c@{}}\#obj\\ \#feat\end{tabular} 
 			& GD 
 			& Nesterov 
 			& ADAM 
@@ -523,65 +545,72 @@ where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
 			\begin{tabular}[c]{@{}c@{}}QPFS+Newton\\ (proposed)\end{tabular} \\ 
 			\hline
 			Boston House
-			& \small{$27.2\pm4.6$}
-			& \small{$46.0\pm11.0$}
-			& \small{$35.4\pm2.5$}               
-			& \small{$22.1\pm15.2$}              
-			& \small{$20.9\pm10.4$}     \\ 
-			\cline{2-6} 
+			& 506
+			& $27.2\pm4.6$
+			& $46.0\pm11.0$
+			& $35.4\pm2.5$           
+			& $22.1\pm15.2$            
+			& $20.9\pm10.4$   \\  
 			Prices
-			& \multicolumn{1}{c|}{\small{$32.4\pm5.6$}}
-			& \multicolumn{1}{c|}{\small{$53.3\pm11.5$}}
-			& \multicolumn{1}{c|}{\small{$37.8\pm7.0$}} 
-			& \multicolumn{1}{c|}{\small{$28.9\pm13.6$}}
-			& \multicolumn{1}{c|}{\small{$\mathbf{24.5\pm9.4}$}}\\ 
+			&\multicolumn{1}{c|}{13}
+			& \multicolumn{1}{c|}{$32.4\pm5.6$}
+			& \multicolumn{1}{c|}{$53.3\pm11.5$}
+			& \multicolumn{1}{c|}{$37.8\pm7.0$}
+			& \multicolumn{1}{c|}{$28.9\pm13.6$}
+			& \multicolumn{1}{c|}{$\mathbf{24.5\pm9.4}$}\\ 
 			\hline
 			Communities
-			& \small{$48.0\pm6.4$ }
-			& \small{$31.4\pm2.8$}
-			& \small{$23.3\pm3.7$}               
-			& \small{$18.3\pm3.4$}              
-			&  \small{$26.7\pm3.1$}   \\ 
-			\cline{2-6} 
-			and Crime 
-			& \multicolumn{1}{c|}{\small{$47,5\pm6.5$}}
-			& \multicolumn{1}{c|}{\small{$32.9\pm4.3$}}
-			& \multicolumn{1}{c|}{\small{$28,1\pm4.5$}} 
-			& \multicolumn{1}{c|}{\small{$28.8\pm3.6$}}
-			& \multicolumn{1}{c|}{\small{$\mathbf{28.4\pm3.0}$}} \\ 
+			& 1994
+			& $48.0\pm6.4$
+			& $31.4\pm2.8$
+			& $23.3\pm3.7$        
+			& $18.3\pm3.4$          
+			&  $26.7\pm3.1$  \\ 
+			and Crime
+			&\multicolumn{1}{c|}{99}
+			& \multicolumn{1}{c|}{$47,5\pm6.5$}
+			& \multicolumn{1}{c|}{$32.9\pm4.3$}
+			& \multicolumn{1}{c|}{$28,1\pm4.5$}
+			& \multicolumn{1}{c|}{$28.8\pm3.6$}
+			& \multicolumn{1}{c|}{$\mathbf{28.4\pm3.0}$} \\ 
 			\hline
 			Forest
-			& \small{$18.9\pm0.4$}
-			& \small{$1.83\pm0.4$}
-			& \small{$1.81\pm0.6$}               
-			& \small{$17.7\pm0.4$}              
-			& \small{$17.9\pm0.4$}   \\ 
-			\cline{2-6} 
+			& 517
+			& $18.9\pm0.4$
+			& $1.83\pm0.4$
+			& $1.81\pm0.6$             
+			& $17.7\pm0.4$             
+			& $17.9\pm0.4$   \\ 
 			Fires
-			& \multicolumn{1}{c|}{\small{$\mathbf{20.0\pm2.1}$}}
-			& \multicolumn{1}{c|}{\small{$20.2\pm2.2$}}
-			& \multicolumn{1}{c|}{\small{$\mathbf{20.0\pm2.0}$}} 
-			& \multicolumn{1}{c|}{\small{$20.6\pm1.4$}}
-			& \multicolumn{1}{c|}{\small{$20.2\pm2.2$}} \\ 
+			&\multicolumn{1}{c|}{10}
+			& \multicolumn{1}{c|}{$\mathbf{20.0\pm2.1}$}
+			& \multicolumn{1}{c|}{ $20.2\pm2.2$}
+			& \multicolumn{1}{c|}{ $\mathbf{20.0\pm2.0}$}
+			& \multicolumn{1}{c|}{ $20.6\pm1.4$}
+			& \multicolumn{1}{c|}{ $20.2\pm2.2$} \\ 
 			\hline
 			Residential
-			& \small{$51.6\pm17.7$}
-			& \small{$32.6\pm19.5$}
-			& \small{$30.0\pm24.8$}               
-			& \small{$35.5\pm24.7$}              
-			&  \small{$30.3\pm10.7$}  \\ 
-			\cline{2-6}
-			Building 
-			& \multicolumn{1}{c|}{\small{$53.7\pm13.9$}}
-			& \multicolumn{1}{c|}{\small{$34.1\pm13.6$}}
-			& \multicolumn{1}{c|}{\small{$34.1\pm19.4$}} 
-			& \multicolumn{1}{c|}{\small{$35.0\pm15.6$}}
-			& \multicolumn{1}{c|}{\small{$\mathbf{30.9\pm5.3}$}} \\ 
+			& 372
+			&  $51.6\pm17.7$
+			&  $32.6\pm19.5$
+			&  $30.0\pm24.8$            
+			&  $35.5\pm24.7$            
+			&   $30.3\pm10.7$ \\ 
+			Building
+			&\multicolumn{1}{c|}{103}
+			& \multicolumn{1}{c|}{ $53.7\pm13.9$}
+			& \multicolumn{1}{c|}{ $34.1\pm13.6$}
+			& \multicolumn{1}{c|}{ $34.1\pm19.4$}
+			& \multicolumn{1}{c|}{ $35.0\pm15.6$}
+			& \multicolumn{1}{c|}{ $\mathbf{30.9\pm5.3}$} \\ 
 			\hline
 		\end{tabular}
+	}
 	\end{table}
 	\section*{Conclusion}
-
+	The paper suggests the new approach to the second-order optimization. 
+	The selection of the set of active model parameters allows to make steps in the directions more relevant to the residuals.
+	The experiments show the proposed algorithm improves the generalization ability and reduces the model error.
   
   \bibliographystyle{unsrt}
   \bibliography{papers_qpfs.bib}
