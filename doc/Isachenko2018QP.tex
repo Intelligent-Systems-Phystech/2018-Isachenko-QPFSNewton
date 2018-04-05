@@ -1,4 +1,3 @@
-
 % !TEX encoding = UTF-8 Unicode
 \documentclass[a4paper,12pt]{article}
 	
@@ -113,7 +112,7 @@
 	
 	\usepackage{csquotes} % Еще инструменты для ссылок
 	
-	%\usepackage[style=authoryear,maxcitenames=2,backend=biber,sorting=nty]{biblatex}
+	%\usepackage[style=authoryear,maxcitenames=2,backend=biber,sorting=nty]{biblate x}
 	
 	\usepackage{multicol} % Несколько колонок
 	
@@ -147,7 +146,6 @@
 	\newcommand{\T}{{\text{\tiny\sffamily\upshape\mdseries T}}}
 	\newcommand{\argmin}{\mathop{\arg \min}\limits}
 	\newcommand{\argmax}{\mathop{\arg \max}\limits}
-	
 	
 	\begin{document}
 		
@@ -198,14 +196,13 @@
 	For the nonlinear regression the Newton method and model linearization leads to the Gauss-Newton method. 
 	Each step solves the linear regression problem. 
 	The authors use the two-layer neural network as the nonlinear model. 
-	The Newton method for logistic regression brings to Iteratively Least Squares~(IRLS) algorithm. 
+	The Newton method for logistic regression brings to Iteratively Reweighted Least Squares~(IRLS) algorithm. 
 	Here the optimization step is made in the direction given also by the linear regression problem solution.
 	
 	The paper proposes to apply the Quadratic Programming Feature Selection~(QPFS) algorithm~\cite{katrutsa2017comprehensive,rodriguez2010qpfs} to select the optimal set of model parameters. The QPFS algorithm selects features for the linear regression problem. We have the linear regression problem for both model in each step. The QPFS algorithm tries to maximize the relevances of features and minimize pairwise dependency between features~\cite{ding2005mrmr}. In our case it allows to find independent parameters which impact the model residuals the most.
 	
 	The computational experiment investigates a behaviour of the proposed algorithm near the optimal point and compared the algorithm with the other methods such as Gradient Descent, Nesterov Momentum, ADAM and Newton algorithms. 
 	
-		
 	\section*{Problem Statement}
 
 	The model $f( \bx, \bw), \bw \in \mathbb{R}^p$ predicts the target variable $y \in \bbY$, given the object $\bx \in \bbR^{n}$. The space $\bbY$ equals $\{0, 1\}$ for the binary classification problem and $\bbY = \bbR$ for the regression problem.
@@ -218,15 +215,15 @@
 	\end{equation}
 	The investigated choices for the error function~$S(\bw | \bX, \by, f)$ are
 	the squared error for the regression problem: 
-		\begin{equation}
-			S(\bw | \bX, \by, f) = \frac 12 \| \by - \mathbf{f}(\bX, \bw) \|_2^2 = \frac 12 \sum_{i=1}^m \bigl( y_i - f(\bx_i,  \bw)\bigr)^2,
-			\label{eq:squared_error}
-		\end{equation}
+	\begin{equation}
+		S(\bw | \bX, \by, f) = \frac 12 \| \by - \mathbf{f}(\bX, \bw) \|_2^2 = \frac 12 \sum_{i=1}^m \bigl( y_i - f(\bx_i,  \bw)\bigr)^2,
+		\label{eq:squared_error}
+	\end{equation}
 	 and the cross-entropy for the binary classification problem: 
-		\begin{equation}
-			S(\bw | \bX, \by, f) = \sum_{i=1}^m \bigl[y_i \log f (\bx_i , \bw) + (1-y_i) \log \bigl(1 - f (\bx_i , \bw)\bigr)\bigr].
-			\label{eq:log_loss}
-		\end{equation}
+	\begin{equation}
+		S(\bw | \bX, \by, f) = \sum_{i=1}^m \bigl[y_i \log f (\bx_i , \bw) + (1-y_i) \log \bigl(1 - f (\bx_i , \bw)\bigr)\bigr].
+		\label{eq:log_loss}
+	\end{equation}
 	
 	The problem~\eqref{eq:error_function} is solved by iterative optimization procedures. 
 	To obtain parameters in the step~$k$, the current parameters $\bw^{k-1}$ is updated by the rule
@@ -246,10 +243,56 @@
 	\end{align*}
 	To select the set $\cA$ from all possible $2^p$ subsets we introduce the quality criteria 
 	\begin{equation}
-		\cA = \argmin_{\cA' \subseteq \{1, \dots, p\}} Q(\cA' | \bX, \by, f, \bw).
+		\cA = \argmax_{\cA' \subseteq \{1, \dots, p\}} Q(\cA' | \bX, \by, f, \bw).
 		\label{eq:subset_selection}
 	\end{equation}
 	The problem~\eqref{eq:subset_selection} is solved in each step $k$ of the optimization process for the current parameters~$\bw^k$.
+	
+	\section*{Quadratic programming feature selection}
+	If there are multicollinearity between columns of the design matrix~$\bX$ the solution of the linear regression problem
+	\begin{equation}
+	\| \by - \bX \bw\|_2^2 \rightarrow\min_{\bw \in \bbR^{n}}.
+	\label{eq:linear_regression}
+	\end{equation}
+	is unstable. The feature selection methods finds the set $\cA \in \{1, \dots, n\}$ of representative columns in~$\bX$. 
+	
+	The goal of the QPFS is to select non-correlated features, which are relevant to the target vector $\by$.
+	To formalise this approach let introduce two functions: $\text{Sim}(\bX)$ and $\text{Rel}(\bX, \by)$. 
+	The $\text{Sim}(\bX)$ measures the redundancy between features, the $\text{Rel}(\bX, \by)$ contains relevances between each feature and target vector. 
+	We want to minimize the Sim function and maximize the Rel simultaneously.
+	
+	QPFS offers the explicit way to construct the functions Sim and Rel. 
+	The method minimizes the following functional
+	\begin{equation}
+	\underbrace{\ba^{\T} \bQ \ba}_{\text{Sim}} - \alpha \cdot \underbrace{\vphantom{()} \mathbf{b}^{\T} \ba}_{\text{Rel}} \rightarrow \min_{\substack{\ba \in \bbR^n_+ \\ \|\ba\|_1=1}}.
+	\label{eq:quadratic_problem}
+	\end{equation}
+	The matrix $\bQ \in \bbR^{n \times n}$ entries measure the pairwise similarities between features. 
+	The vector $\mathbf{b} \in \bbR^n$ expresses the similarities between each feature and the target vector~$\by$.
+	The normalized vector~$\ba$ shows the importance of each feature. 
+	The functional~\eqref{eq:quadratic_problem} penalizes the dependent features by the function Sim and encourages features relevant to the target by the function Rel. 
+	The parameter $\alpha$ allows to control the trade-off between the Sim and the Rel terms.
+	The authors of the original QPFS paper suggested the way to select $\alpha$ and make Sim and Rel terms impact are equal
+	\begin{equation*}
+	\alpha = \frac{\overline{\bQ}}{\overline{\bQ} + \overline{\bb}},
+	\end{equation*}
+	where $\overline{\bQ}$, $\overline{\bb}$ are the mean values of $\bQ$ and $\bb$ correspondingly.
+	Apply the thresholding for $\ba$ to find the optimal feature subset:
+	\[
+	j \in \mathcal{A} \Leftrightarrow a_j > \tau.
+	\]
+	
+	To measure similarity the authors use sample correlation coefficient between pairs of features for the Sim function and between features and target vector for the Rel function.
+	The problem~\eqref{eq:quadratic_problem} is convex if the matrix~$\bQ$ is positive semidefinite. In general it is not always true. 
+	To satisfy this condition the matrix $\bQ$ spectrum is shifted and the matrix~$\bQ$ is replaced by $\bQ - \lambda_{\text{min}} \mathbf{I}$, where $\lambda_{\text{min}} $ is a $\bQ$ minimal eigenvalue.
+	
+	We use the QPFS algorithm to solve the problem~\eqref{eq:subset_selection}.
+	QPFS selects the set~$\cA$ of parameters updates~$\Delta \bw$, which have the greatest impact to the residuals and pairwise independent.
+	The functional~\eqref{eq:quadratic_problem} corresponds to the quality criteria~$Q(\cA | \bX, \by, f, \bw)$.
+	\begin{equation}
+	\cA = \argmax_{\cA' \subseteq \{1, \dots, p\}} Q(\cA' | \bX, \by, f, \bw) \Leftrightarrow \argmin_{\ba  \in \bbR^p_+, \, \|\ba\|_1=1} \bigl[\ba^{\T} \bQ \ba - \alpha \cdot \mathbf{b}^{\T} \ba \bigr].
+	\end{equation}
+	To construct the matrix $\bQ$ and the vector $\bb$ we show that each optimization step is equivalent to the linear regression problem~\eqref{eq:linear_regression} for the nonlinear regression model with the squared error function~\eqref{eq:squared_error} and the logistic regression model with the cross-entropy error function~\eqref{eq:log_loss}.
 	
 	\section*{Newton method}
 	
@@ -273,7 +316,6 @@
 	\]
 	where $\lambda_{\text{max}}(\bH), \lambda_{\text{min}}(\bH)$ are the maximum and minimum eigenvalues of~$\bH$. The large condition number~$\kappa(\bH)$ leads to instability of the optimization process.
 	The proposed algorithm reduces the size of the Hessian matrix $\bH$ and makes the condition number $\kappa(\bH)$ smaller.
-	The algorithm is implemented to the nonlinear regression problem and the binary classification problem.
 	
 	\section*{Nonlinear regression}
 	Assume that the model $f(\bx , \bw)$ is close to linear in the neighborhood of the point $\bw + \Delta \bw$
@@ -333,66 +375,8 @@
 		\| \bz - \bF \Delta \bw \|_2^2 \rightarrow \min_{\Delta \bw \in \bbR^{p}},
 		\label{eq:lin_reg_log_reg}
 	\end{equation}
-where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
+	where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
 	
-	\section*{Quadratic programming feature selection}
-	If there are multicollinearity between columns of the design matrix~$\bX$ the solution of the linear regression problem
-	\begin{equation}
-	\| \by - \bX \bw\|_2^2 \rightarrow\min_{\bw \in \bbR^{n}}.
-	\label{eq:linear_regression}
-	\end{equation}
-	is unstable. The feature selection methods finds the set $\cA \in \{1, \dots, n\}$ of representative columns in~$\bX$. 
-	
-	The goal of the QPFS is to select non-correlated features, which are relevant to the target vector $\by$.
-	To formalise this approach let introduce two functions: Sim and Rel. 
-	The Sim measures the redundancy between features, the Rel contains relevances between each feature and target vector. 
-	We want to minimize the Sim function and maximize the Rel simultaneously.
-	
-	QPFS offers the explicit way to construct the functions Sim and Rel. 
-	The method minimizes the following functional
-	\begin{equation}
-		\underbrace{\ba^{\T} \bQ \ba}_{\text{Sim}} - \alpha \cdot \underbrace{\vphantom{()} \mathbf{b}^{\T} \ba}_{\text{Rel}} \rightarrow \min_{\substack{\ba \geq 0 \\ \|\ba\|_1=1}}.
-		\label{eq:quadratic_problem}
-	\end{equation}
-	The first term is associated with the Sim function and the second with the Rel. 
-  	The matrix $\bQ \in \bbR^{n \times n}$ entries measure the pairwise similarities between features. 
-  	The vector $\mathbf{b} \in \bbR^n$ expresses the similarities between each feature and the target vector~$\by$.
-  	The normalized vector~$\ba$ shows the importance of each feature. 
-  	The functional~\eqref{eq:quadratic_problem} penalizes the dependent features by the function Sim and encourages features relevant to the target by the function Rel. 
-  	The parameter $\alpha$ allows to control the trade-off between the Sim and the Rel terms.
-  	The authors of the original QPFS paper suggested the way to select $\alpha$ and make Sim and Rel terms impact are equal
-  	\begin{equation*}
-  		\alpha = \frac{\overline{\bQ}}{\overline{\bQ} + \overline{\bb}},
-  	\end{equation*}
-  	where $\overline{\bQ}$, $\overline{\bb}$ are the mean values of $\bQ$ and $\bb$ correspondingly.
-  	Apply the thresholding for $\ba$ to find the optimal feature subset:
-  	\[
-  		j \in \mathcal{A} \Leftrightarrow a_j > \tau.
-  	\]
-  	
-  	To measure similarity the authors use sample correlation coefficient between pairs of features for the Sim function and between features and target vector for the Rel function.
-  	The problem~\eqref{eq:quadratic_problem} is convex if the matrix~$\bQ$ is positive semidefinite. In general it is not always true. 
-  	To satisfy this condition we shift the matrix $\bQ$ spectrum and replace the matrix~$\bQ$ by $\bQ - \lambda_{\text{min}} \mathbf{I}$, where $\lambda_{\text{min}} $ is a $\bQ$ minimal eigenvalue.
-  	
-  	To make the optimization process of the Newton algorithm robust and stable we propose to implement the QPFS algorithm to the problems~\eqref{eq:lin_reg_nonlin_reg} and \eqref{eq:lin_reg_log_reg}. 
-  	QPFS selects the set~$\cA$ of parameters updates~$\Delta \bw$, which have the greatest impact to the residuals and pairwise independent.
-  	The functional~\eqref{eq:quadratic_problem} corresponds to the quality criteria~$Q(\cA | \bX, \by, f, \bw)$.
-	\begin{equation}
-		\cA = \argmin_{\cA' \subseteq \{1, \dots, p\}} Q(\cA' | \bX, \by, f, \bw) = \argmin_{\ba \geq 0, \, \|\ba\|_1=1} \bigl[\ba^{\T} \bQ \ba - \alpha \cdot \mathbf{b}^{\T} \ba \bigr].
-	\end{equation}
-  	
-  	The sample correlation coefficient is equal to zero for the orthogonal vectors.
-  	We show that in the optimal point $\bw^*$ the vector $\bz$ is orthogonal to the columns of the matrix $\bF$ for the considered problems. 
-  	It leads to the QPFS vector $\bb = \boldsymbol{0}$.
-  	First order optimization condition guarantees this property for the nonlinear regression problem
-	\[
-		\bF^{\T} \bz = \bJ^{\T} (\mathbf{f} - \by) = - \nabla S(\bw^*) = \boldsymbol{0},
-	\]
-	and the logistic regression problem
-	\[
-		\bF^{\T} \bz = \bX \bR^{-1/2} \bR^{1/2} (\by - \mathbf{f}) = \bX^{\T} (\by - \mathbf{f}) = \nabla S(\bw^*) = \boldsymbol{0}.
-	\]
-
 	\section*{Step size}
 	
 	The step size of the Newton method could be excessively large. To control the step size of the weight updates we add the parameter $\eta$ in the update rule~\eqref{eq:update_rule}
@@ -404,42 +388,62 @@ where $\bz = \bR^{-1/2} (\by - \mathbf{f})$ and $\bF = \bR^{1/2}\bX$.
 		S(\bw^{k - 1} + \eta \Delta \bw^{k - 1}) < S(\bw^{k - 1}) + \gamma \eta \nabla S^{\T}(\bw^{k-1})\bw^{k - 1}, \quad \gamma \in [0, 0.5].
 	\]
 	
+	\section*{Algorithm}
+	We propose to implement the QPFS algorithm to the problems~\eqref{eq:lin_reg_nonlin_reg} and \eqref{eq:lin_reg_log_reg}. 
+	QPFS selects the set~$\cA$ of parameters updates~$\Delta \bw$, which have the greatest impact to the residuals and pairwise independent.
+	The QPFS matrix $\bQ$ and the vector $\bb$ are given by
+	\[
+		\bQ = \text{Sim} (\bF), \quad \bb = \text{Rel} (\bF, \bz).
+	\]
+	
+	The sample correlation coefficient is equal to zero for the orthogonal vectors.
+	We show that in the optimal point $\bw^*$ the vector $\bz$ is orthogonal to the columns of the matrix $\bF$ for the considered problems. 
+	It leads to the QPFS vector $\bb = \boldsymbol{0}$.
+	First order optimization condition guarantees this property for the nonlinear regression problem
+	\[
+	\bF^{\T} \bz = \bJ^{\T} (\mathbf{f} - \by) = - \nabla S(\bw^*) = \boldsymbol{0},
+	\]
+	and the logistic regression problem
+	\[
+	\bF^{\T} \bz = \bX \bR^{-1/2} \bR^{1/2} (\by - \mathbf{f}) = \bX^{\T} (\by - \mathbf{f}) = \nabla S(\bw^*) = \boldsymbol{0}.
+	\]
+	
+	The pseudocode of the algorithm is given in the algorithm~\eqref{pc:QPFSNewton}.
+	\begin{algorithm}
+		\caption{QPFS + Newton algorithm}
+		\label{pc:QPFSNewton}
+		\begin{algorithmic}
+			\REQUIRE $\varepsilon$~-- tolerance;\\
+			\hspace{1.53cm}$\tau$~-- QPFS solution threshold;\\
+			\hspace{1.53cm}$\gamma$~-- Armijo rule parameter.
+			\ENSURE $\bw^*$;
+			\STATE  initialize $\bw^0$;
+			\STATE $k := 1$;
+			\REPEAT
+			\STATE compute $\bz$ and $\bF$ for~\eqref{eq:lin_reg_nonlin_reg} or~\eqref{eq:lin_reg_log_reg} ;
+			\vspace{0.1cm}
+			\STATE $\bQ := \text{Sim} (\bF)$, $\bb := \text{Rel}(\bF, \bz)$, $\alpha = \frac{\overline{\bQ}}{\overline{\bQ} + \overline{\bb}}$;
+			\vspace{0.1cm}
+			\STATE $\ba := \argmin_{\ba \geq 0, \, \|\ba\|_1=1}\ba^{\T} \bQ \ba - \alpha \cdot \mathbf{b}^{\T} \ba$;
+			\vspace{0.1cm}
+			\STATE $\cA = \{j \mid a_j > \tau\}$;
+			\vspace{0.1cm}
+			\STATE compute $\nabla S(\bw^{k-1})$, $\bH$ from \eqref{eq:nonlin_reg_deriv} or \eqref{eq:log_reg_deriv};
+			\vspace{0.1cm}
+			\STATE $\Delta \bw^{k-1} = - \bH^{-1} \nabla S(\bw^{k-1})$;
+			\vspace{0.1cm}
+			\STATE $\eta := \text{ArmijoRule}(\bw^{k-1}, \gamma)$;
+			\vspace{0.1cm}
+			\STATE $\bw_{\cA}^k = \bw_{\cA}^{k - 1} + \eta \Delta \bw_{\cA}^{k - 1}$;
+			\vspace{0.1cm}
+			\STATE $k := k + 1$;
+			\vspace{0.1cm}
+			\UNTIL{$\frac{\| \bw^k - \bw^{k-1} \|}{\| \bw^k \|} < \varepsilon$}
+		\end{algorithmic}
+	\end{algorithm}
+	
   	\section*{Experiment}
-  	The goal of the computational experiment is to explore properties of the proposed algorithm and compare it with the other methods. The pseudocode of the algorithm is given in the algorithm~\eqref{pc:QPFSNewton}.
-  	
-  	
-  	\begin{algorithm}
-  		\caption{QPFS + Newton algorithm}
-  		\label{pc:QPFSNewton}
-  		\begin{algorithmic}
-  			\REQUIRE $\varepsilon$~-- tolerance;\\
-  			\hspace{1.53cm}$\tau$~-- QPFS solution threshold;\\
-  			\hspace{1.53cm}$\gamma$~-- Armijo rule parameter.
-  			\ENSURE $\bw^*$;
-  			\STATE  initialize $\bw^0$;
-  			\STATE $k := 1$;
-  			\REPEAT
-  			\STATE compute $\bz$ and $\bF$ for~\eqref{eq:lin_reg_nonlin_reg} or~\eqref{eq:lin_reg_log_reg} ;
-  			\vspace{0.1cm}
-  			\STATE $\bQ := \text{Sim} (\bF)$, $\bb := \text{Rel}(\bF, \bz)$, $\alpha = \frac{\overline{\bQ}}{\overline{\bQ} + \overline{\bb}}$;
-  			\vspace{0.1cm}
-  			\STATE $\ba := \argmin_{\ba \geq 0, \, \|\ba\|_1=1}\ba^{\T} \bQ \ba - \alpha \cdot \mathbf{b}^{\T} \ba$;
-  			\vspace{0.1cm}
-  			\STATE $\cA = \{j \mid a_j > \tau\}$;
-  			\vspace{0.1cm}
-  			\STATE compute $\nabla S(\bw_{k-1})$, $\bH$ from \eqref{eq:nonlin_reg_deriv} or \eqref{eq:log_reg_deriv};
-  			\vspace{0.1cm}
-  			\STATE $\Delta \bw^{k-1} = - \bH^{-1} \nabla S(\bw^{k-1})$;
-  			\vspace{0.1cm}
-  			\STATE $\eta := \text{ArmijoRule}(\bw_{k-1}, \gamma)$;
-  			\vspace{0.1cm}
-  			\STATE $\bw_{\cA}^k = \bw_{\cA}^{k - 1} + \eta \Delta \bw_{\cA}^{k - 1}$;
-  			\vspace{0.1cm}
-  			\STATE $k := k + 1$;
-  			\vspace{0.1cm}
-  			\UNTIL{$\frac{\| \bw^k - \bw^{k-1} \|}{\| \bw^k \|} < \varepsilon$}
-  		\end{algorithmic}
-  	\end{algorithm}
+  	The goal of the computational experiment is to explore properties of the proposed algorithm and compare it with the other methods. 
   	
   	We investigate the dependence of the QPFS parameters for the problems~\eqref{eq:lin_reg_nonlin_reg},~\eqref{eq:lin_reg_log_reg}. 
   	Assume that the parameter vector~$\bw^0$ lies near the optimal parameters vector~$\bw^*$. 
