@@ -1,2 +1,2 @@
 # QPFS
-Quadratic Programming Feature Selection
+Quadratic Programming Feature Selection for Newton Method
