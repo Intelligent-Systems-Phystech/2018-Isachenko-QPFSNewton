@@ -1,0 +1,89 @@
+\begin{thebibliography}{10}
+
+\bibitem{nesterov1983momentum}
+Yurii Nesterov.
+\newblock A method of solving a convex programming problem with convergence
+  rate o (1/k2).
+\newblock In {\em Soviet Mathematics Doklady}, volume~27, pages 372--376, 1983.
+
+\bibitem{duchi2011adagrad}
+John Duchi, Elad Hazan, and Yoram Singer.
+\newblock Adaptive subgradient methods for online learning and stochastic
+  optimization.
+\newblock {\em Journal of Machine Learning Research}, 12(Jul):2121--2159, 2011.
+
+\bibitem{kingma2014adam}
+Diederik~P Kingma and Jimmy Ba.
+\newblock Adam: A method for stochastic optimization.
+\newblock {\em arXiv preprint arXiv:1412.6980}, 2014.
+
+\bibitem{goodfellow2016deeplearningbook}
+Ian Goodfellow, Yoshua Bengio, and Aaron Courville.
+\newblock {\em Deep Learning}.
+\newblock MIT Press, 2016.
+\newblock \url{http://www.deeplearningbook.org}.
+
+\bibitem{avriel2003nonlinear}
+Mordecai Avriel.
+\newblock {\em Nonlinear programming: analysis and methods}.
+\newblock Courier Corporation, 2003.
+
+\bibitem{blaschke1997convergence}
+Barbara Blaschke, Andreas Neubauer, and Otmar Scherzer.
+\newblock On convergence rates for the iteratively regularized gauss-newton
+  method.
+\newblock {\em IMA Journal of Numerical Analysis}, 17(3):421--436, 1997.
+
+\bibitem{botev2017newtondeeplearning}
+Aleksandar Botev, Hippolyt Ritter, and David Barber.
+\newblock Practical gauss-newton optimisation for deep learning.
+\newblock In {\em International Conference on Machine Learning}, pages
+  557--565, 2017.
+
+\bibitem{li2017feature}
+Jundong Li, Kewei Cheng, Suhang Wang, Fred Morstatter, Robert~P Trevino,
+  Jiliang Tang, and Huan Liu.
+\newblock Feature selection: A data perspective.
+\newblock {\em ACM Computing Surveys (CSUR)}, 50(6):94, 2017.
+
+\bibitem{ding2005mrmr}
+Chris Ding and Hanchuan Peng.
+\newblock Minimum redundancy feature selection from microarray gene expression
+  data.
+\newblock {\em Journal of bioinformatics and computational biology},
+  3(02):185--205, 2005.
+
+\bibitem{yamada2014mrmr}
+Makoto Yamada, Avishek Saha, Hua Ouyang, Dawei Yin, and Yi~Chang.
+\newblock N$^3${LARS}: Minimum redundancy maximum relevance feature selection
+  for large and high-dimensional data.
+\newblock {\em arXiv preprint arXiv:1411.2331}, 2014.
+
+\bibitem{peng2005feature}
+Hanchuan Peng, Fuhui Long, and Chris Ding.
+\newblock Feature selection based on mutual information criteria of
+  max-dependency, max-relevance, and min-redundancy.
+\newblock {\em IEEE Transactions on pattern analysis and machine intelligence},
+  27(8):1226--1238, 2005.
+
+\bibitem{katrutsa2017comprehensive}
+Alexandr Katrutsa and Vadim Strijov.
+\newblock Comprehensive study of feature selection methods to solve
+  multicollinearity problem according to evaluation criteria.
+\newblock {\em Expert Systems with Applications}, 76:1--11, 2017.
+
+\bibitem{rodriguez2010qpfs}
+Irene Rodriguez-Lujan, Ramon Huerta, Charles Elkan, and Carlos~Santa Cruz.
+\newblock Quadratic programming feature selection.
+\newblock {\em Journal of Machine Learning Research}, 11(Apr):1491--1516, 2010.
+
+\bibitem{bertsimas2016best}
+Dimitris Bertsimas, Angela King, Rahul Mazumder, et~al.
+\newblock Best subset selection via a modern optimization lens.
+\newblock {\em The annals of statistics}, 44(2):813--852, 2016.
+
+\bibitem{uci2017}
+Dua Dheeru and Efi Karra~Taniskidou.
+\newblock {UCI} machine learning repository, 2017.
+
+\end{thebibliography}

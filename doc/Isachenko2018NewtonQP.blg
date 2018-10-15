@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2016)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: Isachenko2018NewtonQP.aux
+The style file: unsrt.bst
+Database file #1: papers_qpfs.bib.bib
+Warning--can't use both volume and number fields in nesterov1983momentum
+You've used 15 entries,
+            1791 wiz_defined-function locations,
+            542 strings with 6298 characters,
+and the built_in function-call counts, 3589 in all, are:
+= -- 318
+> -- 163
+< -- 3
++ -- 60
+- -- 45
+* -- 249
+:= -- 564
+add.period$ -- 45
+call.type$ -- 15
+change.case$ -- 13
+chr.to.int$ -- 0
+cite$ -- 16
+duplicate$ -- 155
+empty$ -- 350
+format.name$ -- 45
+if$ -- 794
+int.to.chr$ -- 0
+int.to.str$ -- 15
+missing$ -- 16
+newline$ -- 78
+num.names$ -- 15
+pop$ -- 44
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 74
+stack$ -- 0
+substring$ -- 254
+swap$ -- 37
+text.length$ -- 3
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 1
+while$ -- 36
+width$ -- 17
+write$ -- 163
+(There was 1 warning)
